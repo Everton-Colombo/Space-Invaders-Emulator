@@ -67,6 +67,20 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x22: printf("STAX H"); return 1;
         case 0x32: printf("STAX SP"); return 1;
 
+        /*
+            INX rp (Increment register pair)
+
+            (rh) (rl) <- (rh) (rl) + 1
+            The content of the register pair rp is incremented byone.
+            Note: No condition ftags are affected
+
+            0|0|R|P|0|0|1|1
+        */
+        case 0x03: printf("INX B"); return 1;
+        case 0x13: printf("INX D"); return 1;
+        case 0x23: printf("INX H"); return 1;
+        case 0x33: printf("INX SP"); return 1;
+
         default: printf("UNKNOWN\n"); return 1;
     }
 }
