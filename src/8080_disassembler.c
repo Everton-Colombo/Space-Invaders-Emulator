@@ -31,13 +31,10 @@ int main(int argc, char** argv) {
 
 int disassemble_next_8080(uint8_t* rom, int pc) {
     uint8_t* op = &rom[pc];
-    int opbytes = 1;
 
     printf("%04X\t");
     switch(*op) {
-        case 0x00: // NOP
-            printf("NOP\n");
-            break;
+        case 0x00: printf("NOP\n"); return 1;
 
         /*
             LXI rp, data16 (Load register pair immediate)
@@ -50,27 +47,26 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
             0|0|R|P|0|0|0|1
         */
-        case 0x01: // LXI B - Pair B & C
-            printf("LXI B, %02x%02x\n", op[2], op[1]);
-            opbytes = 3;
-            break;
-        case 0x11: // LXI D - Pair D & E
-            printf("LXI D, %02x%02x\n", op[2], op[1]);
-            opbytes = 3;
-            break;
-        case 0x21: // LXI H - Pair H & L
-            printf("LXI H, %02x%02x\n", op[2], op[1]);
-            opbytes = 3;
-            break;
-        case 0x31: // LXI SP
-            printf("LXI SP, %02x%02x\n", op[2], op[1]);
-            opbytes = 3;
-            break;
+        case 0x01: printf("LXI B, %02x%02x\n", op[2], op[1]); return 3;
+        case 0x11: printf("LXI D, %02x%02x\n", op[2], op[1]); return 3;
+        case 0x21: printf("LXI H, %02x%02x\n", op[2], op[1]); return 3;
+        case 0x31: printf("LXI SP, %02x%02x\n", op[2], op[1]); return 3;
+        
+        /*
+            STAX rp (Store accumulator indirect)
 
-        default:
-            printf("UNKNOWN\n");
-            break;
+            ((rp)) <- (A)
+            The content of register A is moved to the memory location whose address is in the register pair rp. Note:
+            only register pairs rp=B (registers B and C) or rp=D
+            (registers D and E) may be specified.
+
+            0|0|R|P|0|0|1|0
+        */
+        case 0x02: printf("STAX B"); return 1;
+        case 0x12: printf("STAX D"); return 1;
+        case 0x22: printf("STAX H"); return 1;
+        case 0x32: printf("STAX SP"); return 1;
+
+        default: printf("UNKNOWN\n"); return 1;
     }
-
-    return opbytes;
 }
