@@ -320,6 +320,167 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x7D: printf("MOV A,L\n"); return 1;
         case 0x7E: printf("MOV A,M\n"); return 1;
         case 0x7F: printf("MOV A,A\n"); return 1;
+
+        // HLT: Halt
+        case 0x76: printf("HLT\n"); return 1;
+
+        /*
+            ADD r (Add register) | M (Add memory)
+
+            (A) <- (A) + (r) | (A) <- (A) + ((H) (L))
+            The content of register r is added to the content of the
+            accumulator. The result is placed in the accumulator.
+            Note: All condition flags are affected.
+
+            1|0|0|0|0|S|S|S
+        */
+        case 0x80: printf("ADD B\n"); return 1;
+        case 0x81: printf("ADD C\n"); return 1;
+        case 0x82: printf("ADD D\n"); return 1;
+        case 0x83: printf("ADD E\n"); return 1;
+        case 0x84: printf("ADD H\n"); return 1;
+        case 0x85: printf("ADD L\n"); return 1;
+        case 0x86: printf("ADD M\n"); return 1;
+        case 0x87: printf("ADD A\n"); return 1;
+
+        /*
+            ADC r (Add register with carry) | M (Add memory with carry)
+
+            (A) <- (A) + (r) + (CY) | (A) <- (A) + ((H) (L)) + (CY)
+            The content of register r and the content of the CY flag
+            are added to the content of the accumulator. The result
+            is placed in the accumulator.
+            Note: All condition flags are affected.
+
+            1|0|0|0|1|S|S|S
+        */
+        case 0x88: printf("ADC B\n"); return 1;
+        case 0x89: printf("ADC C\n"); return 1;
+        case 0x8A: printf("ADC D\n"); return 1;
+        case 0x8B: printf("ADC E\n"); return 1;
+        case 0x8C: printf("ADC H\n"); return 1;
+        case 0x8D: printf("ADC L\n"); return 1;
+        case 0x8E: printf("ADC M\n"); return 1;
+        case 0x8F: printf("ADC A\n"); return 1;
+
+        /*
+            SUB r (Subtract register) | M (Subtract memory)
+
+            (A) <- (A) - (r) | (A) <- (A) - ((H) (L))
+            The content of register r is subtracted from the content of the accumulator. The result is placed in the
+            accumulator.
+            Note: All condition flags are affected.
+
+            1|0|0|1|0|S|S|S
+        */
+        case 0x90: printf("SUB B\n"); return 1;
+        case 0x91: printf("SUB C\n"); return 1;
+        case 0x92: printf("SUB D\n"); return 1;
+        case 0x93: printf("SUB E\n"); return 1;
+        case 0x94: printf("SUB H\n"); return 1;
+        case 0x95: printf("SUB L\n"); return 1;
+        case 0x96: printf("SUB M\n"); return 1;
+        case 0x97: printf("SUB A\n"); return 1;
+
+        /*
+            SBB r (Subtract register with borrow) | M (Subtract memory with borrow)
+
+            (A) <- (A) - (r) - (CY) | (A) <- (A) - ((H) (L)) - (CY)
+            The content of register r and the content of the CY flag
+            are both subtracted from the accumulator. The result is
+            placed in the accumulator.
+            Note: All condition flags are affected.
+
+            1|0|0|1|1|S|S|S
+        */
+        case 0x98: printf("SBB B\n"); return 1;
+        case 0x99: printf("SBB C\n"); return 1;
+        case 0x9A: printf("SBB D\n"); return 1;
+        case 0x9B: printf("SBB E\n"); return 1;
+        case 0x9C: printf("SBB H\n"); return 1;
+        case 0x9D: printf("SBB L\n"); return 1;
+        case 0x9E: printf("SBB M\n"); return 1;
+        case 0x9F: printf("SBB A\n"); return 1;
+
+        /*
+            ANA r (Logical and register) | M (Logical and memory)
+
+            (A) <- (A) ^ (r) | (A) <- (A) ^ ((H) (L))
+            The content of register r is logically anded with the
+            content of the accumulator. The result is placed in the
+            accumulator. The CY flag is cleared.
+            Note: The S, Z, P are affected.
+
+            1|0|1|0|0|S|S|S
+        */
+        case 0xA0: printf("ANA B\n"); return 1;
+        case 0xA1: printf("ANA C\n"); return 1;
+        case 0xA2: printf("ANA D\n"); return 1;
+        case 0xA3: printf("ANA E\n"); return 1;
+        case 0xA4: printf("ANA H\n"); return 1;
+        case 0xA5: printf("ANA L\n"); return 1;
+        case 0xA6: printf("ANA M\n"); return 1;
+        case 0xA7: printf("ANA A\n"); return 1;
+
+        /*
+            XRA r (Exclusive OR register) | M (Exclusive OR memory)
+
+            (A) <- (A) XOR (r) | (A) <- (A) XOR ((H) (L))
+            The content of register r is exclusive-or'd with the
+            content of the accumulator. The result is placed in the
+            accumulator. The CY and AC flags are cleared.
+            Note: The S, Z, P are affected.
+
+            1|0|1|0|1|S|S|S
+        */
+        case 0xA8: printf("XRA B\n"); return 1;
+        case 0xA9: printf("XRA C\n"); return 1;
+        case 0xAA: printf("XRA D\n"); return 1;
+        case 0xAB: printf("XRA E\n"); return 1;
+        case 0xAC: printf("XRA H\n"); return 1;
+        case 0xAD: printf("XRA L\n"); return 1;
+        case 0xAE: printf("XRA M\n"); return 1;
+        case 0xAF: printf("XRA A\n"); return 1;
+
+        /*
+            ORA r (Logical OR register) | M (Logical OR memory)
+
+            (A) <- (A) V (r) | (A) <- (A) V ((H) (L))
+            The content of register r is inclusive-or'd with the
+            content of the accumulator. The result is placed in the
+            accumulator. The CY and AC flags are cleared.
+            Note: The S, Z, P are affected.
+
+            1|0|1|1|0|S|S|S
+        */
+        case 0xB0: printf("ORA B\n"); return 1;
+        case 0xB1: printf("ORA C\n"); return 1;
+        case 0xB2: printf("ORA D\n"); return 1;
+        case 0xB3: printf("ORA E\n"); return 1;
+        case 0xB4: printf("ORA H\n"); return 1;
+        case 0xB5: printf("ORA L\n"); return 1;
+        case 0xB6: printf("ORA M\n"); return 1;
+        case 0xB7: printf("ORA A\n"); return 1;
+
+        /*
+            CMP r (Compare register) | M (Compare memory)
+
+            (A) - (r) | (A) - ((H) (L))
+            The content of register r is subtracted from the accumulator. The accumulator remains unchanged. The
+            condition flags are set as a result of the subtraction.
+            The Z flag is set to 1 if (A) = (r). The CY flag is set to 1
+            if (A) < (r).
+
+            1|0|1|1|1|S|S|S
+        */
+        case 0xB8: printf("CMP B\n"); return 1;
+        case 0xB9: printf("CMP C\n"); return 1;
+        case 0xBA: printf("CMP D\n"); return 1;
+        case 0xBB: printf("CMP E\n"); return 1;
+        case 0xBC: printf("CMP H\n"); return 1;
+        case 0xBD: printf("CMP L\n"); return 1;
+        case 0xBE: printf("CMP M\n"); return 1;
+        case 0xBF: printf("CMP A\n"); return 1;
         
         default: printf("UNKNOWN\n"); return 1;
     }
