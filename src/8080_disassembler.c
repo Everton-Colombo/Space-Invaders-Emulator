@@ -568,8 +568,11 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xEA: printf("JPE 0x%02x%02x\n", op[2], op[1]); return 3;
         // JM a16: Jump if minus
         case 0xFA: printf("JM 0x%02x%02x\n", op[2], op[1]); return 3;
+        
         // PCHL: Jump to address in H:L
         case 0xE9: printf("PCHL\n"); return 1;
+        // SPHL: (sp) <- (H) (L)
+        case 0xF9: printf("SPHL\n"); return 1;
 
         // CNZ a16: Call if not zero
         case 0xC4: printf("CNZ 0x%02x%02x\n", op[2], op[1]); return 3;
@@ -593,6 +596,38 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xEC: printf("CPE 0x%02x%02x\n", op[2], op[1]); return 3;
         // CM a16: Call if minus
         case 0xFC: printf("CM 0x%02x%02x\n", op[2], op[1]); return 3;
+
+        // RST 0
+        case 0xC7: printf("RST 0\n"); return 1;
+        // RST 1
+        case 0xCF: printf("RST 1\n"); return 1;
+        // RST 2
+        case 0xD7: printf("RST 2\n"); return 1;
+        // RST 3
+        case 0xDF: printf("RST 3\n"); return 1;
+        // RST 4
+        case 0xE7: printf("RST 4\n"); return 1;
+        // RST 5
+        case 0xEF: printf("RST 5\n"); return 1;
+        // RST 6
+        case 0xF7: printf("RST 6\n"); return 1;
+        // RST 7
+        case 0xFF: printf("RST 7\n"); return 1;
+
+        // OUT d8
+        case 0xD3: printf("OUT 0x%02x\n", op[1]); return 2;
+        // IN d8
+        case 0xDB: printf("IN 0x%02x\n", op[1]); return 2;
+
+        // XTHL: Exchange stack top with H:L
+        case 0xE3: printf("XTHL\n"); return 1;
+        // XCHG: Exchange D:E with H:L
+        case 0xEB: printf("XCHG\n"); return 1;
+
+        // DI: Disable interrupts
+        case 0xF3: printf("DI\n"); return 1;
+        // EI: Enable interrupts
+        case 0xFB: printf("EI\n"); return 1;
         
         default: printf("UNKNOWN\n"); return 1;
     }
