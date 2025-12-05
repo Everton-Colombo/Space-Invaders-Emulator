@@ -209,7 +209,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x07: printf("RLC\n"); return 1;
 
        /*
-            RLC (Rotate right)
+            RRC (Rotate right)
 
             (A_n) <- (A_n-1) ; (A_7) <- (A_0)
             (CY) <- (A_0)
@@ -241,8 +241,11 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         // LDA addr: Load accumulator direct
         case 0x3A: printf("LDA %02x%02x\n", op[2], op[1]); return 3;
 
+        // CMA: Complement A
+        case 0x2F: printf("CMA\n"); return 1;
 
-
+        // CMC: Complement Carry
+        case 0x3F: printf("CMC\n"); return 1;
 
         /*
             MOV r1, r2 (Move Register)
