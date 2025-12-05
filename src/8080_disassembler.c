@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+int disassemble_next_8080(uint8_t* rom, unsigned int pc);
+
 int main(int argc, char** argv) {
     FILE* rom_fp = fopen(argv[1], "rb");
     if (rom_fp == NULL) {
@@ -17,10 +19,9 @@ int main(int argc, char** argv) {
     fread(rom, sizeof(uint8_t), file_size, rom_fp);
     fclose(rom_fp);
 
-    for (int i = 0; i < file_size; i++) {
-        if (i % 16 == 0)
-            printf("\n");
-        printf("%02x ", rom[i]);
+    unsigned int pc = 0;
+    while (pc < file_size) {
+        pc += disassemble_next_8080(rom, pc);
     }
     printf("\n\n");
 
@@ -29,10 +30,10 @@ int main(int argc, char** argv) {
 }
 
 
-int disassemble_next_8080(uint8_t* rom, int pc) {
+int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
     uint8_t* op = &rom[pc];
 
-    printf("%04X\t");
+    printf("%04X\t", pc);
     switch(*op) {
         case 0x00:
         case 0x10:
@@ -55,10 +56,10 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
             0|0|R|P|0|0|0|1
         */
-        case 0x01: printf("LXI B, %02x%02x\n", op[2], op[1]); return 3;
-        case 0x11: printf("LXI D, %02x%02x\n", op[2], op[1]); return 3;
-        case 0x21: printf("LXI H, %02x%02x\n", op[2], op[1]); return 3;
-        case 0x31: printf("LXI SP, %02x%02x\n", op[2], op[1]); return 3;
+        case 0x01: printf("LXI B, 0x%02x%02x\n", op[2], op[1]); return 3;
+        case 0x11: printf("LXI D, 0x%02x%02x\n", op[2], op[1]); return 3;
+        case 0x21: printf("LXI H, 0x%02x%02x\n", op[2], op[1]); return 3;
+        case 0x31: printf("LXI SP, 0x%02x%02x\n", op[2], op[1]); return 3;
         
         /*
             STAX rp (Store accumulator indirect)
@@ -149,14 +150,14 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|D|D|D|1|1|0
             
         */
-        case 0x06: printf("MVI B, %02x\n", op[1]); return 2;
-        case 0x16: printf("MVI D, %02x\n", op[1]); return 2;
-        case 0x26: printf("MVI H, %02x\n", op[1]); return 2;
-        case 0x36: printf("MVI M, %02x\n", op[1]); return 2;
-        case 0x0E: printf("MVI C, %02x\n", op[1]); return 2;
-        case 0x1E: printf("MVI E, %02x\n", op[1]); return 2;
-        case 0x2E: printf("MVI L, %02x\n", op[1]); return 2;
-        case 0x3E: printf("MVI A, %02x\n", op[1]); return 2;
+        case 0x06: printf("MVI B, 0x%02x\n", op[1]); return 2;
+        case 0x16: printf("MVI D, 0x%02x\n", op[1]); return 2;
+        case 0x26: printf("MVI H, 0x%02x\n", op[1]); return 2;
+        case 0x36: printf("MVI M, 0x%02x\n", op[1]); return 2;
+        case 0x0E: printf("MVI C, 0x%02x\n", op[1]); return 2;
+        case 0x1E: printf("MVI E, 0x%02x\n", op[1]); return 2;
+        case 0x2E: printf("MVI L, 0x%02x\n", op[1]); return 2;
+        case 0x3E: printf("MVI A, 0x%02x\n", op[1]); return 2;
 
         /*
             SHLD addr (Store H and L direct)
@@ -180,8 +181,8 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|1|0|1|0|1|0 + a16
             
         */
-        case 0x22: printf("SHLD %02x%02x\n", op[2], op[1]); return 3;
-        case 0x2A: printf("LHLD %02x%02x\n", op[2], op[1]); return 3;
+        case 0x22: printf("SHLD 0x%02x%02x\n", op[2], op[1]); return 3;
+        case 0x2A: printf("LHLD 0x%02x%02x\n", op[2], op[1]); return 3;
 
         /*
             STA addr (Store Accumulator direct)
@@ -193,7 +194,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
             0011|0010 + a16
         */
-        case 0x32: printf("STA %02x%02x\n", op[2], op[1]); return 3;
+        case 0x32: printf("STA 0x%02x%02x\n", op[2], op[1]); return 3;
 
         /*
             RLC (Rotate left)
@@ -239,7 +240,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x1A: printf("LDAX D\n"); return 1;
 
         // LDA addr: Load accumulator direct
-        case 0x3A: printf("LDA %02x%02x\n", op[2], op[1]); return 3;
+        case 0x3A: printf("LDA 0x%02x%02x\n", op[2], op[1]); return 3;
 
         // CMA: Complement A
         case 0x2F: printf("CMA\n"); return 1;
@@ -483,14 +484,14 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0xBF: printf("CMP A\n"); return 1;
 
         // Immediate arithmetic operations
-        case 0xC6: printf("ADI %02x\n", op[1]); return 2;
-        case 0xCE: printf("ACI %02x\n", op[1]); return 2;
-        case 0xD6: printf("SUI %02x\n", op[1]); return 2;
-        case 0xDE: printf("SBI %02x\n", op[1]); return 2;
-        case 0xE6: printf("ANI %02x\n", op[1]); return 2;
-        case 0xEE: printf("XRI %02x\n", op[1]); return 2;
-        case 0xF6: printf("ORI %02x\n", op[1]); return 2;
-        case 0xFE: printf("CPI %02x\n", op[1]); return 2;
+        case 0xC6: printf("ADI 0x%02x\n", op[1]); return 2;
+        case 0xCE: printf("ACI 0x%02x\n", op[1]); return 2;
+        case 0xD6: printf("SUI 0x%02x\n", op[1]); return 2;
+        case 0xDE: printf("SBI 0x%02x\n", op[1]); return 2;
+        case 0xE6: printf("ANI 0x%02x\n", op[1]); return 2;
+        case 0xEE: printf("XRI 0x%02x\n", op[1]); return 2;
+        case 0xF6: printf("ORI 0x%02x\n", op[1]); return 2;
+        case 0xFE: printf("CPI 0x%02x\n", op[1]); return 2;
         
         default: printf("UNKNOWN\n"); return 1;
     }
