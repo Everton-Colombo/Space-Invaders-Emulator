@@ -222,10 +222,80 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
         case 0x37: printf("STC\n"); return 1;
 
+        /*
+            MOV r1, r2 (Move Register)
+            (r1) <- (r2)
+            The content of register r2 is moved to register r1.
+
+            0|1|D|D|D|S|S|S
+        */
+        case 0x40: printf("MOV B,B\n"); return 1;
+        case 0x41: printf("MOV B,C\n"); return 1;
+        case 0x42: printf("MOV B,D\n"); return 1;
+        case 0x43: printf("MOV B,E\n"); return 1;
+        case 0x44: printf("MOV B,H\n"); return 1;
+        case 0x45: printf("MOV B,L\n"); return 1;
+        case 0x46: printf("MOV B,M\n"); return 1;
+        case 0x47: printf("MOV B,A\n"); return 1;
+        case 0x48: printf("MOV C,B\n"); return 1;
+        case 0x49: printf("MOV C,C\n"); return 1;
+        case 0x4A: printf("MOV C,D\n"); return 1;
+        case 0x4B: printf("MOV C,E\n"); return 1;
+        case 0x4C: printf("MOV C,H\n"); return 1;
+        case 0x4D: printf("MOV C,L\n"); return 1;
+        case 0x4E: printf("MOV C,M\n"); return 1;
+        case 0x4F: printf("MOV C,A\n"); return 1;
+
+        case 0x50: printf("MOV D,B\n"); return 1;
+        case 0x51: printf("MOV D,C\n"); return 1;
+        case 0x52: printf("MOV D,D\n"); return 1;
+        case 0x53: printf("MOV D,E\n"); return 1;
+        case 0x54: printf("MOV D,H\n"); return 1;
+        case 0x55: printf("MOV D,L\n"); return 1;
+        case 0x56: printf("MOV D,M\n"); return 1;
+        case 0x57: printf("MOV D,A\n"); return 1;
+        case 0x58: printf("MOV E,B\n"); return 1;
+        case 0x59: printf("MOV E,C\n"); return 1;
+        case 0x5A: printf("MOV E,D\n"); return 1;
+        case 0x5B: printf("MOV E,E\n"); return 1;
+        case 0x5C: printf("MOV E,H\n"); return 1;
+        case 0x5D: printf("MOV E,L\n"); return 1;
+        case 0x5E: printf("MOV E,M\n"); return 1;
+        case 0x5F: printf("MOV E,A\n"); return 1;
+
+        case 0x60: printf("MOV H,B\n"); return 1;
+        case 0x61: printf("MOV H,C\n"); return 1;
+        case 0x62: printf("MOV H,D\n"); return 1;
+        case 0x63: printf("MOV H,E\n"); return 1;
+        case 0x64: printf("MOV H,H\n"); return 1;
+        case 0x65: printf("MOV H,L\n"); return 1;
+        case 0x66: printf("MOV H,M\n"); return 1;
+        case 0x67: printf("MOV H,A\n"); return 1;
+        case 0x68: printf("MOV L,B\n"); return 1;
+        case 0x69: printf("MOV L,C\n"); return 1;
+        case 0x6A: printf("MOV L,D\n"); return 1;
+        case 0x6B: printf("MOV L,E\n"); return 1;
+        case 0x6C: printf("MOV L,H\n"); return 1;
+        case 0x6D: printf("MOV L,L\n"); return 1;
+        case 0x6E: printf("MOV L,M\n"); return 1;
+        case 0x6F: printf("MOV L,A\n"); return 1;
+
+        case 0x70: printf("MOV M,B\n"); return 1;
+        case 0x71: printf("MOV M,C\n"); return 1;
+        case 0x72: printf("MOV M,D\n"); return 1;
+        case 0x73: printf("MOV M,E\n"); return 1;
+        case 0x74: printf("MOV M,H\n"); return 1;
+        case 0x75: printf("MOV M,L\n"); return 1;
+        case 0x77: printf("MOV M,A\n"); return 1;
+        case 0x78: printf("MOV A,B\n"); return 1;
+        case 0x79: printf("MOV A,C\n"); return 1;
+        case 0x7A: printf("MOV A,D\n"); return 1;
+        case 0x7B: printf("MOV A,E\n"); return 1;
+        case 0x7C: printf("MOV A,H\n"); return 1;
+        case 0x7D: printf("MOV A,L\n"); return 1;
+        case 0x7E: printf("MOV A,M\n"); return 1;
+        case 0x7F: printf("MOV A,A\n"); return 1;
         
-
-    
-
         default: printf("UNKNOWN\n"); return 1;
     }
 }
