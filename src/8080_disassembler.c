@@ -42,7 +42,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x18:
         case 0x28:
         case 0x38:
-        printf("NOP\n"); return 1;
+            printf("NOP\n"); return 1;
 
         /*
             LXI rp, data16 (Load register pair immediate)
@@ -163,7 +163,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|1|0|0|0|1|0 + a16
 
 
-            LHLDadd r (Load H and L direct)
+            LHLD addr (Load H and L direct)
 
             (L) <- ((byte3)(byte2))
             (H) <- ((byte3)(byte2) + 1)
@@ -174,8 +174,20 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|1|0|1|0|1|0 + a16
             
         */
-       case 0x22: printf("SHLD %02x%02x\n", op[2], op[1]); return 3;
-       case 0x2A: printf("LHLD %02x%02x\n", op[2], op[1]); return 3;
+        case 0x22: printf("SHLD %02x%02x\n", op[2], op[1]); return 3;
+        case 0x2A: printf("LHLD %02x%02x\n", op[2], op[1]); return 3;
+
+        /*
+            STA addr (Store Accumulator direct)
+
+            ((byte3)(byte2)) <- (A)
+            The content of the accumulator is moved to the
+            memory location whose address is specified in byte
+            2 and byte 3 of the instruction. 
+
+            0011|0010 + a16
+        */
+        case 0x32: printf("STA %02x%02x\n", op[2], op[1]); return 3;
 
         default: printf("UNKNOWN\n"); return 1;
     }
