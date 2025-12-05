@@ -34,7 +34,15 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
     printf("%04X\t");
     switch(*op) {
-        case 0x00: printf("NOP\n"); return 1;
+        case 0x00:
+        case 0x10:
+        case 0x20:
+        case 0x30:
+        case 0x08:
+        case 0x18:
+        case 0x28:
+        case 0x38:
+        printf("NOP\n"); return 1;
 
         /*
             LXI rp, data16 (Load register pair immediate)
