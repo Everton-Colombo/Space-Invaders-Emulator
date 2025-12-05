@@ -89,10 +89,10 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0x33: printf("INX SP\n"); return 1;
 
         // DCX rp (Decrement register pair)
-        case 0x0B: printf("dcX B\n"); return 1;
-        case 0x1B: printf("dcX D\n"); return 1;
-        case 0x2B: printf("dcX H\n"); return 1;
-        case 0x3B: printf("dcX SP\n"); return 1;
+        case 0x0B: printf("DCX B\n"); return 1;
+        case 0x1B: printf("DCX D\n"); return 1;
+        case 0x2B: printf("DCX H\n"); return 1;
+        case 0x3B: printf("DCX SP\n"); return 1;
 
         /*
             INR r (Increment Register) | m (Increment memory)
