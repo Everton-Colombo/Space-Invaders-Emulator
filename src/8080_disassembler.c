@@ -481,6 +481,16 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0xBD: printf("CMP L\n"); return 1;
         case 0xBE: printf("CMP M\n"); return 1;
         case 0xBF: printf("CMP A\n"); return 1;
+
+        // Immediate arithmetic operations
+        case 0xC6: printf("ADI %02x\n", op[1]); return 2;
+        case 0xCE: printf("ACI %02x\n", op[1]); return 2;
+        case 0xD6: printf("SUI %02x\n", op[1]); return 2;
+        case 0xDE: printf("SBI %02x\n", op[1]); return 2;
+        case 0xE6: printf("ANI %02x\n", op[1]); return 2;
+        case 0xEE: printf("XRI %02x\n", op[1]); return 2;
+        case 0xF6: printf("ORI %02x\n", op[1]); return 2;
+        case 0xFE: printf("CPI %02x\n", op[1]); return 2;
         
         default: printf("UNKNOWN\n"); return 1;
     }
