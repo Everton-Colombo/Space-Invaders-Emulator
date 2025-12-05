@@ -80,12 +80,18 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x33: printf("INX SP"); return 1;
 
         /*
-            INR r (Increment Register)
-            (r) <- (r) + 1
+            INR r (Increment Register) | m (Increment memory)
+
+            (r) <- (r) + 1 | ((H) (L)) <- ((H) (L)) + 1
             The content of register r is incremented by one.
+            or
+            The content of the memory location whose address
+            is contained in the H and L registers is incremented
+            by one
             Note: All condition flags except CY are affected.
 
             0|0|D|D|D|1|0|0
+            0|0|1|1|0|1|0|0
         */
         case 0x04: printf("INR B"); return 1;
         case 0x14: printf("INR D"); return 1;
@@ -95,6 +101,29 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x1C: printf("INR E"); return 1;
         case 0x2C: printf("INR L"); return 1;
         case 0x3C: printf("INR A"); return 1;
+
+        /*
+            DCR r (Decrement Register) | m (Decrement memory)
+
+            (r) <- (r) - 1 | ((H) (L)) <- ((H) (L)) - 1
+            The content of register r is decremented by one.
+            or
+            The content of the memory location whose address
+            is contained in the H and L registers is decremented
+            by one
+            Note: All condition flags except CY are affected.
+
+            0|0|D|D|D|1|0|1
+            0|0|1|1|0|1|0|1
+        */
+        case 0x05: printf("DCR B"); return 1;
+        case 0x15: printf("DCR D"); return 1;
+        case 0x25: printf("DCR H"); return 1;
+        case 0x35: printf("DCR M"); return 1;
+        case 0x0D: printf("DCR C"); return 1;
+        case 0x1D: printf("DCR E"); return 1;
+        case 0x2D: printf("DCR L"); return 1;
+        case 0x3D: printf("DCR A"); return 1;
 
         default: printf("UNKNOWN\n"); return 1;
     }
