@@ -492,6 +492,21 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xEE: printf("XRI 0x%02x\n", op[1]); return 2;
         case 0xF6: printf("ORI 0x%02x\n", op[1]); return 2;
         case 0xFE: printf("CPI 0x%02x\n", op[1]); return 2;
+
+        case 0XC0: printf("RNZ\n"); return 1; // Return if not zero
+        case 0XD0: printf("RNC\n"); return 1; // Return on no carry
+        case 0xE0: printf("RPO\n"); return 1; // Return on parity odd
+        case 0xF0: printf("RP\n"); return 1;  // Return on positive
+        case 0xC8: printf("RZ\n"); return 1;  // Return on zero
+        case 0xD8: printf("RC\n"); return 1;  // Return on carry
+        case 0xE8: printf("RPE\n"); return 1; // Return on parity even
+        case 0xF8: printf("RM\n"); return 1;  // Return on minus
+        case 0xC9:
+        case 0xD9:
+            printf("RET\n"); return 1; // Return
+        
+        
+        
         
         default: printf("UNKNOWN\n"); return 1;
     }
