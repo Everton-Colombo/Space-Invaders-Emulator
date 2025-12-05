@@ -133,6 +133,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             registerr. 
 
             0|0|D|D|D|1|1|0
+            
         */
         case 0x06: printf("MVI B, %02x\n", op[1]); return 2;
         case 0x16: printf("MVI D, %02x\n", op[1]); return 2;
@@ -142,6 +143,31 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x1E: printf("MVI E, %02x\n", op[1]); return 2;
         case 0x2E: printf("MVI L, %02x\n", op[1]); return 2;
         case 0x3E: printf("MVI A, %02x\n", op[1]); return 2;
+
+        /*
+            SHLD addr (Store H and L direct)
+
+            ((byte3)(byte2)) <- (L)
+            ((byte 3)(byte 2) + 1) <- (H)
+            The content of register L is moved to the memory location whose address is specified in byte 2 and byte
+            3. The content of register H is moved to the succeeding memory location.
+
+            0|0|1|0|0|0|1|0 + a16
+
+
+            LHLDadd r (Load H and L direct)
+
+            (L) <- ((byte3)(byte2))
+            (H) <- ((byte3)(byte2) + 1)
+            The content of the memory location, whose address
+            is specified in byte 2 and byte 3 of the instruction, is
+            moved to register L. The content of the memory location at the succeeding address is moved to register H.
+
+            0|0|1|0|1|0|1|0 + a16
+            
+        */
+       case 0x22: printf("SHLD %02x%02x\n", op[2], op[1]); return 3;
+       case 0x2A: printf("LHLD %02x%02x\n", op[2], op[1]); return 3;
 
         default: printf("UNKNOWN\n"); return 1;
     }
