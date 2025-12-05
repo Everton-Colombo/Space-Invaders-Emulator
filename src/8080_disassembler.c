@@ -505,6 +505,49 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xD9:
             printf("RET\n"); return 1; // Return
         
+        /*
+            POP rp (Pop register pair)
+
+            (rl) <- ((SP))
+            (rh) <- ((SP) + 1)
+            (SP) <- (SP) + 2
+            The content of the memory location, whose address
+            is specified by the content of register SP, is moved to
+            the low-order register of register pair rp. The content
+            of the memory location, whose address is one more
+            than the content of register SP, is moved to the highorder register of register pair rp. The content of register
+            SP is incremented by 2. Note: Register pair rp = SP
+            may not be specified.
+
+            1|1|R|P|0|0|0|1
+        */
+        case 0xC1: printf("POP B\n"); return 1;
+        case 0xD1: printf("POP D\n"); return 1;
+        case 0xE1: printf("POP H\n"); return 1;
+        case 0xF1: printf("POP PSW\n"); return 1;
+
+        /*
+            PUSH rp (Push register pair)
+
+            ((SP) - 1) <- (rh)
+            ((SP) - 2) <- (rl)
+            (SP) <- (SP) - 2
+            The content of the high-order register of register pair
+            rp is moved to the memory location whose address is
+            one less than the content of register SP. The content
+            of the low-order register of register pair rp is moved
+            to the memory location whose address is two less
+            than the content of register SP. The content of register
+            SP is decremented by 2. Note: Register pair rp = SP
+            may not be specified.
+
+            1|1|R|P|0|1|0|1
+        */
+        case 0xC5: printf("PUSH B\n"); return 1;
+        case 0xD5: printf("PUSH D\n"); return 1;
+        case 0xE5: printf("PUSH H\n"); return 1;
+        case 0xF5: printf("PUSH PSW\n"); return 1;
+        
         
         
         
