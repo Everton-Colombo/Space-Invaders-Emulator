@@ -87,6 +87,12 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x23: printf("INX H\n"); return 1;
         case 0x33: printf("INX SP\n"); return 1;
 
+        // DCX rp (Decrement register pair)
+        case 0x0B: printf("dcX B\n"); return 1;
+        case 0x1B: printf("dcX D\n"); return 1;
+        case 0x2B: printf("dcX H\n"); return 1;
+        case 0x3B: printf("dcX SP\n"); return 1;
+
         /*
             INR r (Increment Register) | m (Increment memory)
 
@@ -234,6 +240,8 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
         // LDA addr: Load accumulator direct
         case 0x3A: printf("LDA %02x%02x\n", op[2], op[1]); return 3;
+
+
 
 
         /*
