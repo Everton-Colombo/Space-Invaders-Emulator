@@ -200,7 +200,7 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             
             0000|0111
         */
-       case 0x07: printf("RLC\n"); return 1;
+        case 0x07: printf("RLC\n"); return 1;
 
        /*
             RLC (Rotate right)
@@ -213,12 +213,18 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             
             0000|1111
         */
-       case 0x0F: printf("RRC\n"); return 1;
+        case 0x0F: printf("RRC\n"); return 1;
 
-       case 0x17: printf("RAL\n"); return 1;
-       case 0x1F: printf("RAR\n"); return 1;
+        case 0x17: printf("RAL\n"); return 1;
+        case 0x1F: printf("RAR\n"); return 1;
 
+        case 0x27: printf("DAA\n"); return 1;
 
+        case 0x37: printf("STC\n"); return 1;
+
+        
+
+    
 
         default: printf("UNKNOWN\n"); return 1;
     }
