@@ -570,9 +570,29 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xFA: printf("JM 0x%02x%02x\n", op[2], op[1]); return 3;
         // PCHL: Jump to address in H:L
         case 0xE9: printf("PCHL\n"); return 1;
-        
-        
-        
+
+        // CNZ a16: Call if not zero
+        case 0xC4: printf("CNZ 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CALL a16: Unconditional call
+        case 0xCD: 
+        case 0xDD: 
+        case 0xED: 
+        case 0xFD: 
+            printf("CALL 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CNC a16: Call if no carry
+        case 0xD4: printf("CNC 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CPO a16: Call if parity odd
+        case 0xE4: printf("CPO 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CP a16: Call if positive
+        case 0xF4: printf("CP 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CZ a16: Call if zero
+        case 0xCC: printf("CZ 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CC a16: Call if carry
+        case 0xDC: printf("CC 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CPE a16: Call if parity even
+        case 0xEC: printf("CPE 0x%02x%02x\n", op[2], op[1]); return 3;
+        // CM a16: Call if minus
+        case 0xFC: printf("CM 0x%02x%02x\n", op[2], op[1]); return 3;
         
         default: printf("UNKNOWN\n"); return 1;
     }
