@@ -222,6 +222,13 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
         case 0x37: printf("STC\n"); return 1;
 
+        // DAD: (Add register pair to H and L)
+        case 0x09: printf("DAD B\n"); return 1;
+        case 0x19: printf("DAD D\n"); return 1;
+        case 0x29: printf("DAD H\n"); return 1;
+        case 0x39: printf("DAD SP\n"); return 1;
+
+
         /*
             MOV r1, r2 (Move Register)
             (r1) <- (r2)
