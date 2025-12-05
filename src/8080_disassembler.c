@@ -62,8 +62,8 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
             0|0|R|P|0|0|1|0
         */
-        case 0x02: printf("STAX B"); return 1;
-        case 0x12: printf("STAX D"); return 1;
+        case 0x02: printf("STAX B\n"); return 1;
+        case 0x12: printf("STAX D\n"); return 1;
 
         /*
             INX rp (Increment register pair)
@@ -74,10 +74,10 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
             0|0|R|P|0|0|1|1
         */
-        case 0x03: printf("INX B"); return 1;
-        case 0x13: printf("INX D"); return 1;
-        case 0x23: printf("INX H"); return 1;
-        case 0x33: printf("INX SP"); return 1;
+        case 0x03: printf("INX B\n"); return 1;
+        case 0x13: printf("INX D\n"); return 1;
+        case 0x23: printf("INX H\n"); return 1;
+        case 0x33: printf("INX SP\n"); return 1;
 
         /*
             INR r (Increment Register) | m (Increment memory)
@@ -93,14 +93,14 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|D|D|D|1|0|0
             0|0|1|1|0|1|0|0
         */
-        case 0x04: printf("INR B"); return 1;
-        case 0x14: printf("INR D"); return 1;
-        case 0x24: printf("INR H"); return 1;
-        case 0x34: printf("INR M"); return 1;
-        case 0x0C: printf("INR C"); return 1;
-        case 0x1C: printf("INR E"); return 1;
-        case 0x2C: printf("INR L"); return 1;
-        case 0x3C: printf("INR A"); return 1;
+        case 0x04: printf("INR B\n"); return 1;
+        case 0x14: printf("INR D\n"); return 1;
+        case 0x24: printf("INR H\n"); return 1;
+        case 0x34: printf("INR M\n"); return 1;
+        case 0x0C: printf("INR C\n"); return 1;
+        case 0x1C: printf("INR E\n"); return 1;
+        case 0x2C: printf("INR L\n"); return 1;
+        case 0x3C: printf("INR A\n"); return 1;
 
         /*
             DCR r (Decrement Register) | m (Decrement memory)
@@ -116,14 +116,32 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
             0|0|D|D|D|1|0|1
             0|0|1|1|0|1|0|1
         */
-        case 0x05: printf("DCR B"); return 1;
-        case 0x15: printf("DCR D"); return 1;
-        case 0x25: printf("DCR H"); return 1;
-        case 0x35: printf("DCR M"); return 1;
-        case 0x0D: printf("DCR C"); return 1;
-        case 0x1D: printf("DCR E"); return 1;
-        case 0x2D: printf("DCR L"); return 1;
-        case 0x3D: printf("DCR A"); return 1;
+        case 0x05: printf("DCR B\n"); return 1;
+        case 0x15: printf("DCR D\n"); return 1;
+        case 0x25: printf("DCR H\n"); return 1;
+        case 0x35: printf("DCR M\n"); return 1;
+        case 0x0D: printf("DCR C\n"); return 1;
+        case 0x1D: printf("DCR E\n"); return 1;
+        case 0x2D: printf("DCR L\n"); return 1;
+        case 0x3D: printf("DCR A\n"); return 1;
+
+        /*
+            MVI r (Move immediate) | m (Move to memory immediate)
+
+            (r) <- (byte 2) | ((H) (L)) <- (byte 2)
+            The content of byte 2 of the instruction is moved to
+            registerr. 
+
+            0|0|D|D|D|1|1|0
+        */
+        case 0x06: printf("MVI B, %02x\n", op[1]); return 2;
+        case 0x16: printf("MVI D, %02x\n", op[1]); return 2;
+        case 0x26: printf("MVI H, %02x\n", op[1]); return 2;
+        case 0x36: printf("MVI M, %02x\n", op[1]); return 2;
+        case 0x0E: printf("MVI C, %02x\n", op[1]); return 2;
+        case 0x1E: printf("MVI E, %02x\n", op[1]); return 2;
+        case 0x2E: printf("MVI L, %02x\n", op[1]); return 2;
+        case 0x3E: printf("MVI A, %02x\n", op[1]); return 2;
 
         default: printf("UNKNOWN\n"); return 1;
     }
