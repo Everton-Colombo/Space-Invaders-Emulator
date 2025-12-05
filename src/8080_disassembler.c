@@ -222,11 +222,18 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
 
         case 0x37: printf("STC\n"); return 1;
 
-        // DAD: (Add register pair to H and L)
+        // DAD rp: (Add register pair to H and L)
         case 0x09: printf("DAD B\n"); return 1;
         case 0x19: printf("DAD D\n"); return 1;
         case 0x29: printf("DAD H\n"); return 1;
         case 0x39: printf("DAD SP\n"); return 1;
+
+        // LDAX rp: Load accumulator indirect
+        case 0x0A: printf("LDAX B\n"); return 1;
+        case 0x1A: printf("LDAX D\n"); return 1;
+
+        // LDA addr: Load accumulator direct
+        case 0x3A: printf("LDA %02x%02x\n", op[2], op[1]); return 3;
 
 
         /*
