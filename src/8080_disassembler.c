@@ -64,8 +64,6 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         */
         case 0x02: printf("STAX B"); return 1;
         case 0x12: printf("STAX D"); return 1;
-        case 0x22: printf("STAX H"); return 1;
-        case 0x32: printf("STAX SP"); return 1;
 
         /*
             INX rp (Increment register pair)
@@ -80,6 +78,23 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         case 0x13: printf("INX D"); return 1;
         case 0x23: printf("INX H"); return 1;
         case 0x33: printf("INX SP"); return 1;
+
+        /*
+            INR r (Increment Register)
+            (r) <- (r) + 1
+            The content of register r is incremented by one.
+            Note: All condition flags except CY are affected.
+
+            0|0|D|D|D|1|0|0
+        */
+        case 0x04: printf("INR B"); return 1;
+        case 0x14: printf("INR D"); return 1;
+        case 0x24: printf("INR H"); return 1;
+        case 0x34: printf("INR M"); return 1;
+        case 0x0C: printf("INR C"); return 1;
+        case 0x1C: printf("INR E"); return 1;
+        case 0x2C: printf("INR L"); return 1;
+        case 0x3C: printf("INR A"); return 1;
 
         default: printf("UNKNOWN\n"); return 1;
     }
