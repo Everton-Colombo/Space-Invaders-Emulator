@@ -189,6 +189,37 @@ int disassemble_next_8080(uint8_t* rom, int pc) {
         */
         case 0x32: printf("STA %02x%02x\n", op[2], op[1]); return 3;
 
+        /*
+            RLC (Rotate left)
+
+            (A_n+1) <- (A_n) ; (A_0) <- (A_7)
+            (CY) <- (A_7)
+            The content of the accumulator is rotated left one
+            position. The low order bit and the CY flag are both
+            set to the value shifted out of the high order bit position. Only the CY flag is affected.
+            
+            0000|0111
+        */
+       case 0x07: printf("RLC\n"); return 1;
+
+       /*
+            RLC (Rotate right)
+
+            (A_n) <- (A_n-1) ; (A_7) <- (A_0)
+            (CY) <- (A_0)
+            The content of the accumulator is rotated right one
+            position. The high order bit and the CY flag are both
+            set to the value shifted out of the low order bit position. Only the CY flag is affected.
+            
+            0000|1111
+        */
+       case 0x0F: printf("RRC\n"); return 1;
+
+       case 0x17: printf("RAL\n"); return 1;
+       case 0x1F: printf("RAR\n"); return 1;
+
+
+
         default: printf("UNKNOWN\n"); return 1;
     }
 }
