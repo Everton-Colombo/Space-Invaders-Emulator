@@ -547,6 +547,29 @@ int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
         case 0xD5: printf("PUSH D\n"); return 1;
         case 0xE5: printf("PUSH H\n"); return 1;
         case 0xF5: printf("PUSH PSW\n"); return 1;
+
+        // JNZ a16: Jump if not zero
+        case 0xC2: printf("JNZ 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JMP a16: Unconditional jump
+        case 0xC3: 
+        case 0xCB: 
+            printf("JMP 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JNC a16: Jump if no carry
+        case 0xD2: printf("JNC 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JPO a16: Jump if parity odd
+        case 0xE2: printf("JPO 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JP a16: Jump if positive
+        case 0xF2: printf("JP 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JZ a16: Jump if zero
+        case 0xCA: printf("JZ 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JC a16: Jump if carry
+        case 0xDA: printf("JC 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JPE a16: Jump if parity even
+        case 0xEA: printf("JPE 0x%02x%02x\n", op[2], op[1]); return 3;
+        // JM a16: Jump if minus
+        case 0xFA: printf("JM 0x%02x%02x\n", op[2], op[1]); return 3;
+        // PCHL: Jump to address in H:L
+        case 0xE9: printf("PCHL\n"); return 1;
         
         
         
