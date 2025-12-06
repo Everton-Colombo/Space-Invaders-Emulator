@@ -20,6 +20,35 @@ struct Registers8080 {
     uint8_t l;
     uint16_t sp;
     uint16_t pc;
+
+    uint16_t getPair(RegisterPairId8080 rp) const {
+        switch (rp) {
+            case BC: return (static_cast<uint16_t>(b) << 8) | c;
+            case DE: return (static_cast<uint16_t>(d) << 8) | e;
+            case HL: return (static_cast<uint16_t>(h) << 8) | l;
+            case SP: return sp;
+        }
+    }
+
+    void setPair(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
+        switch (rp) {
+            case BC:
+                b = dh;
+                c = dl;
+                break;
+            case DE:
+                d = dh;
+                e = dl;
+                break;
+            case HL: 
+                h = dh;
+                l = dl;
+                break;
+            case SP:
+                sp = (static_cast<uint16_t>(dh) << 8) | dl;
+                break;
+        }
+    }
 };
 
 enum SrcDestId8080 {
@@ -33,6 +62,13 @@ enum SrcDestId8080 {
     M
 };
 
+enum RegisterPairId8080 {
+    BC,
+    DE,
+    HL,
+    SP
+};
+
 class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags;
@@ -41,8 +77,9 @@ private:
     uint8_t* memory;
     bool intEnable;
 
-    uint8_t* _getByteAddr(SrcDestId8080 id);
+    uint8_t* _getAddr(SrcDestId8080 id);
 
+    void opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh);
     void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
     void opMVI(SrcDestId8080 dest, uint8_t data);
 
