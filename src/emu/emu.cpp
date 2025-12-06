@@ -2,22 +2,27 @@
 #include <iostream>
 #include <cstdio>
 
-uint8_t* CPU_8080::_getByteAddr(RegisterId8080 id) {
+uint8_t* CPU_8080::_getByteAddr(SrcDestId8080 id) {
     switch (id) {
-        case RegisterId8080::A: return &this->registers.a;
-        case RegisterId8080::B: return &this->registers.b;
-        case RegisterId8080::C: return &this->registers.c;
-        case RegisterId8080::D: return &this->registers.d;
-        case RegisterId8080::E: return &this->registers.e;
-        case RegisterId8080::H: return &this->registers.h;
-        case RegisterId8080::L: return &this->registers.l;
+        case SrcDestId8080::A: return &this->registers.a;
+        case SrcDestId8080::B: return &this->registers.b;
+        case SrcDestId8080::C: return &this->registers.c;
+        case SrcDestId8080::D: return &this->registers.d;
+        case SrcDestId8080::E: return &this->registers.e;
+        case SrcDestId8080::H: return &this->registers.h;
+        case SrcDestId8080::L: return &this->registers.l;
 
-        case RegisterId8080::M: return &this->memory[registers.h << 8 | registers.l];
+        case SrcDestId8080::M: return &this->memory[registers.h << 8 | registers.l];
     }
 }
 
-void CPU_8080::opMOV(RegisterId8080 dest, RegisterId8080 src) {
+void CPU_8080::opMOV(SrcDestId8080 dest, SrcDestId8080 src) {
     *_getByteAddr(dest) = *_getByteAddr(src);
+}
+
+void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
+    *_getByteAddr(dest) = data;
+    registers.pc++;
 }
 
 bool CPU_8080::tick() {
@@ -29,8 +34,13 @@ bool CPU_8080::tick() {
         if (nibble1 == 6) { /* HLT */ }
 
         // MOV 0|1|D|D|D|S|S|S
-        opMOV(static_cast<RegisterId8080>(*opcode & 0b00111000), static_cast<RegisterId8080>(*opcode & 0b00000111));
+        opMOV(static_cast<SrcDestId8080>(*opcode & 0b00111000), static_cast<SrcDestId8080>(*opcode & 0b00000111));
         return true;
+    }
+
+    if ((nibble1 == 6 || nibble1 == 0xE) && (nibble0 <= 3)) {
+        // MVI 0|0||D|D|D|1|1|0
+        opMVI(static_cast<SrcDestId8080>(*opcode & 0b00111000), opcode[1]);
     }
 
     switch (*opcode) {
@@ -49,5 +59,5 @@ bool CPU_8080::tick() {
             return false;
     }
 
-    this->registers.pc++;
+    registers.pc++;
 }

@@ -22,7 +22,7 @@ struct Registers8080 {
     uint16_t pc;
 };
 
-enum RegisterId8080 {
+enum SrcDestId8080 {
     A = 0b111,
     B = 0b000,
     C,
@@ -41,9 +41,10 @@ private:
     uint8_t* memory;
     bool intEnable;
 
-    uint8_t* _getByteAddr(RegisterId8080 id);
+    uint8_t* _getByteAddr(SrcDestId8080 id);
 
-    void opMOV(RegisterId8080 dest, RegisterId8080 src);
+    void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
+    void opMVI(SrcDestId8080 dest, uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
