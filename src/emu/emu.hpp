@@ -22,6 +22,17 @@ struct Registers8080 {
     uint16_t pc;
 };
 
+enum RegisterId8080 {
+    A = 0b111,
+    B = 0b000,
+    C,
+    D,
+    E,
+    H,
+    L,
+    M
+};
+
 class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags;
@@ -29,6 +40,10 @@ private:
 
     uint8_t* memory;
     bool intEnable;
+
+    uint8_t* _getByteAddr(RegisterId8080 id);
+
+    void opMOV(RegisterId8080 dest, RegisterId8080 src);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
