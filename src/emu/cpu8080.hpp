@@ -78,6 +78,7 @@ private:
     bool intEnable;
 
     uint8_t* _getAddr(SrcDestId8080 id);
+    void _setArithmeticConditionFlags(uint16_t operationResult);
 
     void opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh);
     void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
@@ -88,6 +89,10 @@ private:
     void opADI(uint8_t data);
     void opADC(SrcDestId8080 src);
     void opACI(uint8_t data);
+    void opSUB(SrcDestId8080 src);
+    void opSUI(uint8_t data);
+    void opSBB(SrcDestId8080 src);
+    void opSBI(uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

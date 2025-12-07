@@ -40,24 +40,25 @@ bool determineParity(uint8_t n) {
     return count % 2;
 }
 
+void CPU_8080::_setArithmeticConditionFlags(uint16_t operationResult) {
+    conditionFlags.z = ((operationResult & 0xff) == 0);
+    conditionFlags.s = ((operationResult & 0x80) != 0);
+    conditionFlags.cy = (operationResult > 0xff);
+    conditionFlags.p = determineParity(operationResult);
+}
+
 void CPU_8080::opADD(SrcDestId8080 src) {
     uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src));
     registers.a = result & 0xff;
 
-    conditionFlags.z = ((result & 0xff) == 0);
-    conditionFlags.s = ((result & 0x80) != 0);
-    conditionFlags.cy = (result > 0xff);
-    conditionFlags.p = determineParity(result);
+    _setArithmeticConditionFlags(result);
 }
 
 void CPU_8080::opADI(uint8_t data) {
     uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data);
     registers.a = result & 0xff;
 
-    conditionFlags.z = ((result & 0xff) == 0);
-    conditionFlags.s = ((result & 0x80) != 0);
-    conditionFlags.cy = (result > 0xff);
-    conditionFlags.p = determineParity(result);
+    _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
 }
@@ -66,20 +67,46 @@ void CPU_8080::opADC(SrcDestId8080 src) {
     uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src)) + conditionFlags.cy;
     registers.a = result & 0xff;
 
-    conditionFlags.z = ((result & 0xff) == 0);
-    conditionFlags.s = ((result & 0x80) != 0);
-    conditionFlags.cy = (result > 0xff);
-    conditionFlags.p = determineParity(result);
+    _setArithmeticConditionFlags(result);
 }
 
 void CPU_8080::opACI(uint8_t data) {
     uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data) + conditionFlags.cy;
     registers.a = result & 0xff;
 
-    conditionFlags.z = ((result & 0xff) == 0);
-    conditionFlags.s = ((result & 0x80) != 0);
-    conditionFlags.cy = (result > 0xff);
-    conditionFlags.p = determineParity(result);
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opSUB(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(*_getAddr(src));
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opSUI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(data);
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opSBB(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(*_getAddr(src)) - conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opSBI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(data) - conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
 }
@@ -113,6 +140,13 @@ bool CPU_8080::tick() {
         else
             opADC(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADC 1|0|0|0|1|S|S|S 
     }
+
+    if (nibble0 == 9) {
+        if (nibble1 <= 7)
+            opSUB(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+        else
+            opSBB(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+    }
         
 
     switch (*opcode) {
@@ -127,11 +161,19 @@ bool CPU_8080::tick() {
             break; // NOP
         
         case 0xC6:
-            opADI(opcode[1]); // ADI 1|0|0|0|0|S|S|S
+            opADI(opcode[1]);
             break;
         
         case 0xCE:
             opACI(opcode[1]);
+            break;
+        
+        case 0xD6:
+            opSUI(opcode[1]);
+            break;
+        
+        case 0xDE:
+            opSBI(opcode[1]);
             break;
 
         default:
