@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include "emu.hpp"
+#include "cpu8080.hpp"
 
 std::vector<uint8_t> loadROM(char* filePath) {
     std::ifstream fs(filePath, std::ios::binary | std::ios::ate);
