@@ -4,15 +4,15 @@
 
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
-        case SrcDestId8080::A: return &this->registers.a;
-        case SrcDestId8080::B: return &this->registers.b;
-        case SrcDestId8080::C: return &this->registers.c;
-        case SrcDestId8080::D: return &this->registers.d;
-        case SrcDestId8080::E: return &this->registers.e;
-        case SrcDestId8080::H: return &this->registers.h;
-        case SrcDestId8080::L: return &this->registers.l;
+        case SrcDestId8080::A: return &registers.a;
+        case SrcDestId8080::B: return &registers.b;
+        case SrcDestId8080::C: return &registers.c;
+        case SrcDestId8080::D: return &registers.d;
+        case SrcDestId8080::E: return &registers.e;
+        case SrcDestId8080::H: return &registers.h;
+        case SrcDestId8080::L: return &registers.l;
 
-        case SrcDestId8080::M: return &this->memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
+        case SrcDestId8080::M: return &memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
     }
 } 
 
@@ -28,6 +28,38 @@ void CPU_8080::opMOV(SrcDestId8080 dest, SrcDestId8080 src) {
 void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
     *_getAddr(dest) = data;
     registers.pc++;
+}
+
+// Arithemetic Ops
+bool determineParity(uint8_t n) {
+    int count = 0;
+    while (n > 0) {
+        n &= (n - 1);
+        count++;
+    }
+    return count % 2;
+}
+
+void CPU_8080::opADD(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src));
+    registers.a = result & 0xff;
+
+    conditionFlags.z = ((result & 0xff) == 0);
+    conditionFlags.s = ((result & 0x80) != 0);
+    conditionFlags.cy = (result > 0xff);
+    conditionFlags.p = determineParity(result);
+}
+
+void CPU_8080::opADI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data);
+    registers.a = result & 0xff;
+
+    conditionFlags.z = ((result & 0xff) == 0);
+    conditionFlags.s = ((result & 0x80) != 0);
+    conditionFlags.cy = (result > 0xff);
+    conditionFlags.p = determineParity(result);
+
+    registers.pc += 1;
 }
 
 bool CPU_8080::tick() {
@@ -55,6 +87,9 @@ bool CPU_8080::tick() {
         return true;
     }
 
+    if (nibble0 == 8 && nibble1 <= 7)
+        opADD(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADD 1|0|0|0|0|S|S|S
+
     switch (*opcode) {
         case 0x00:
         case 0x10:
@@ -65,6 +100,10 @@ bool CPU_8080::tick() {
         case 0x28:
         case 0x38:
             break; // NOP
+        
+        case 0xC6:
+            opADI(opcode[1]); // ADI 1|0|0|0|0|S|S|S
+            break;
 
         default:
             printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);

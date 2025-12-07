@@ -83,6 +83,10 @@ private:
     void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
     void opMVI(SrcDestId8080 dest, uint8_t data);
 
+    // Arithmetic Ops:
+    void opADD(SrcDestId8080 src);
+    void opADI(uint8_t data);
+
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
         this->memory = memoryBaseAddress;
