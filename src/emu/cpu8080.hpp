@@ -86,6 +86,8 @@ private:
     // Arithmetic Ops:
     void opADD(SrcDestId8080 src);
     void opADI(uint8_t data);
+    void opADC(SrcDestId8080 src);
+    void opACI(uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

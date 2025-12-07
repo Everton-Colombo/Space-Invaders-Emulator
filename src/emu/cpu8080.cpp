@@ -62,33 +62,58 @@ void CPU_8080::opADI(uint8_t data) {
     registers.pc += 1;
 }
 
+void CPU_8080::opADC(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src)) + conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    conditionFlags.z = ((result & 0xff) == 0);
+    conditionFlags.s = ((result & 0x80) != 0);
+    conditionFlags.cy = (result > 0xff);
+    conditionFlags.p = determineParity(result);
+}
+
+void CPU_8080::opACI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data) + conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    conditionFlags.z = ((result & 0xff) == 0);
+    conditionFlags.s = ((result & 0x80) != 0);
+    conditionFlags.cy = (result > 0xff);
+    conditionFlags.p = determineParity(result);
+
+    registers.pc += 1;
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 
     if (nibble0 <= 3) {
-        if (nibble1 == 6 || nibble1 == 0xE) {
-            // MVI 0|0||D|D|D|1|1|0 + d8
-            opMVI(static_cast<SrcDestId8080>(*opcode & 0b00111000), opcode[1]);
-        }
-
         if (nibble1 = 1) {
             // LXI 0|0|R|P|0|0|0|1 + d16
             opLXI(static_cast<RegisterPairId8080>(*opcode & 0b00110000), opcode[1], opcode[2]);
+        }
+        
+        if (nibble1 == 6 || nibble1 == 0xE) {
+            // MVI 0|0||D|D|D|1|1|0 + d8
+            opMVI(static_cast<SrcDestId8080>(*opcode & 0b00111000), opcode[1]);
         }
     }
 
     if (nibble0 >= 4 && nibble0 <= 7) {
         if (nibble1 == 6) { /* HLT */ }
-
-        // MOV 0|1|D|D|D|S|S|S
-        opMOV(static_cast<SrcDestId8080>(*opcode & 0b00111000), static_cast<SrcDestId8080>(*opcode & 0b00000111));
-        return true;
+        else
+            opMOV(static_cast<SrcDestId8080>(*opcode & 0b00111000), static_cast<SrcDestId8080>(*opcode & 0b00000111)); // MOV 0|1|D|D|D|S|S|S
     }
 
-    if (nibble0 == 8 && nibble1 <= 7)
-        opADD(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADD 1|0|0|0|0|S|S|S
+    if (nibble0 == 8) {
+        if (nibble1 <= 7)
+            opADD(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADD 1|0|0|0|0|S|S|S
+        else
+            opADC(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADC 1|0|0|0|1|S|S|S 
+    }
+        
 
     switch (*opcode) {
         case 0x00:
@@ -103,6 +128,10 @@ bool CPU_8080::tick() {
         
         case 0xC6:
             opADI(opcode[1]); // ADI 1|0|0|0|0|S|S|S
+            break;
+        
+        case 0xCE:
+            opACI(opcode[1]);
             break;
 
         default:
