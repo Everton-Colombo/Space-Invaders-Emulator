@@ -93,6 +93,8 @@ private:
     void opSUI(uint8_t data);
     void opSBB(SrcDestId8080 src);
     void opSBI(uint8_t data);
+    void opANA(SrcDestId8080 src);
+    void opANI(uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

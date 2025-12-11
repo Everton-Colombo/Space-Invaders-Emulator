@@ -111,6 +111,20 @@ void CPU_8080::opSBI(uint8_t data) {
     registers.pc += 1;
 }
 
+void CPU_8080::opANA(SrcDestId8080 src) {
+    registers.a = registers.a & *_getAddr(src);
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+}
+
+void CPU_8080::opANI(uint8_t data) {
+    registers.a = registers.a & data;
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+
+    registers.pc += 1;
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -147,6 +161,13 @@ bool CPU_8080::tick() {
         else
             opSBB(static_cast<SrcDestId8080>(*opcode & 0b00000111));
     }
+
+    if (nibble0 == 0xA) {
+        if (nibble1 <= 7)
+            opANA(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+        else
+            ; // XRA
+    }
         
 
     switch (*opcode) {
@@ -174,6 +195,10 @@ bool CPU_8080::tick() {
         
         case 0xDE:
             opSBI(opcode[1]);
+            break;
+        
+        case 0xE6:
+            opANI(opcode[1]);
             break;
 
         default:
