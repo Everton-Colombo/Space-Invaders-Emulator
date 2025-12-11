@@ -95,6 +95,10 @@ private:
     void opSBI(uint8_t data);
     void opANA(SrcDestId8080 src);
     void opANI(uint8_t data);
+    void opXRA(SrcDestId8080 src);
+    void opXRI(uint8_t data);
+    void opORA(SrcDestId8080 src);
+    void opORI(uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
