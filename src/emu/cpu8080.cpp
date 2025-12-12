@@ -217,6 +217,18 @@ void CPU_8080::opRAR() {
     conditionFlags.cy = a0Bit; 
 }
 
+void CPU_8080::opCMA() {
+    registers.a = ~registers.a;
+}
+
+void CPU_8080::opCMC() {
+    conditionFlags.cy = ~conditionFlags.cy;
+}
+
+void CPU_8080::opSTC() {
+    conditionFlags.cy = 1;
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -305,6 +317,18 @@ bool CPU_8080::tick() {
         
         case 0x1F:
             opRAR();
+            break;
+        
+        case 0x37:
+            opSTC();
+            break;
+        
+        case 0x2F:
+            opCMA();
+            break;
+        
+        case 0x3F:
+            opCMC();
             break;
 
         case 0xC6:

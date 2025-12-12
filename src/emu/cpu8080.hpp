@@ -125,6 +125,9 @@ private:
     void opRRC();
     void opRAL();
     void opRAR();
+    void opCMA();
+    void opCMC();
+    void opSTC();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
