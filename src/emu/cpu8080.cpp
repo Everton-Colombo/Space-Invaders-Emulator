@@ -193,6 +193,30 @@ void CPU_8080::opDCR(SrcDestId8080 dest) {
     conditionFlags.cy = prevCy; // CY isn't affected
 }
 
+void CPU_8080::opRLC() {
+    uint8_t a7Bit = registers.a >> 7;
+    registers.a = (registers.a << 1) + a7Bit;
+    conditionFlags.cy = a7Bit;  
+}
+
+void CPU_8080::opRRC() {
+    uint8_t a0Bit = registers.a & 0b1;
+    registers.a = (registers.a >> 1) + (a0Bit << 7);
+    conditionFlags.cy = a0Bit;  
+}
+
+void CPU_8080::opRAL() {
+    uint8_t a7Bit = registers.a >> 7;
+    registers.a = (registers.a << 1) + conditionFlags.cy;
+    conditionFlags.cy = a7Bit; 
+}
+
+void CPU_8080::opRAR() {
+    uint8_t a0Bit = registers.a & 0b1;
+    registers.a = (registers.a >> 1) + (conditionFlags.cy << 7);
+    conditionFlags.cy = a0Bit; 
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -267,6 +291,22 @@ bool CPU_8080::tick() {
         case 0x38:
             break; // NOP
         
+        case 0x07:
+            opRLC();
+            break;
+        
+        case 0x17:
+            opRAL();
+            break;
+        
+        case 0x0F:
+            opRRC();
+            break;
+        
+        case 0x1F:
+            opRAR();
+            break;
+
         case 0xC6:
             opADI(opcode[1]);
             break;

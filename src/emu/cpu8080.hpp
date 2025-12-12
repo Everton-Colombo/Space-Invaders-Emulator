@@ -121,6 +121,10 @@ private:
     void opDCX(RegisterPairId8080 rp);
     void opINR(SrcDestId8080 dest);
     void opDCR(SrcDestId8080 dest);
+    void opRLC();
+    void opRRC();
+    void opRAL();
+    void opRAR();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
