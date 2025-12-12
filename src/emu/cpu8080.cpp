@@ -157,6 +157,18 @@ void CPU_8080::opXRI(uint8_t data) {
     registers.pc += 1;
 }
 
+void CPU_8080::opCMP(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - *_getAddr(src);
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opCPI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - data;
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -204,6 +216,8 @@ bool CPU_8080::tick() {
     if (nibble0 == 0xB) {
         if (nibble1 <= 7)
             opORA(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+        else
+            opCMP(static_cast<SrcDestId8080>(*opcode & 0b00000111));
     }
         
 
@@ -244,6 +258,10 @@ bool CPU_8080::tick() {
         
         case 0xF6:
             opORI(opcode[1]);
+            break;
+        
+        case 0xFE:
+            opCPI(opcode[1]);
             break;
 
         default:

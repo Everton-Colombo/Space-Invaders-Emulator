@@ -99,6 +99,8 @@ private:
     void opXRI(uint8_t data);
     void opORA(SrcDestId8080 src);
     void opORI(uint8_t data);
+    void opCMP(SrcDestId8080 src);
+    void opCPI(uint8_t data);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
