@@ -4,15 +4,15 @@
 
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
-        case SrcDestId8080::A: return &this->registers.a;
-        case SrcDestId8080::B: return &this->registers.b;
-        case SrcDestId8080::C: return &this->registers.c;
-        case SrcDestId8080::D: return &this->registers.d;
-        case SrcDestId8080::E: return &this->registers.e;
-        case SrcDestId8080::H: return &this->registers.h;
-        case SrcDestId8080::L: return &this->registers.l;
+        case SrcDestId8080::A: return &registers.a;
+        case SrcDestId8080::B: return &registers.b;
+        case SrcDestId8080::C: return &registers.c;
+        case SrcDestId8080::D: return &registers.d;
+        case SrcDestId8080::E: return &registers.e;
+        case SrcDestId8080::H: return &registers.h;
+        case SrcDestId8080::L: return &registers.l;
 
-        case SrcDestId8080::M: return &this->memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
+        case SrcDestId8080::M: return &memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
     }
 } 
 
@@ -30,46 +30,326 @@ void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
     registers.pc++;
 }
 
+// Arithemetic Ops
+bool determineParity(uint8_t n) {
+    int count = 0;
+    while (n > 0) {
+        n &= (n - 1);
+        count++;
+    }
+    return count % 2;
+}
+
+void CPU_8080::_setArithmeticConditionFlags(uint16_t operationResult) {
+    conditionFlags.z = ((operationResult & 0xff) == 0);
+    conditionFlags.s = ((operationResult & 0x80) != 0);
+    conditionFlags.cy = (operationResult > 0xff);
+    conditionFlags.p = determineParity(operationResult);
+}
+
+void CPU_8080::opADD(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src));
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opADI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data);
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opADC(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(*_getAddr(src)) + conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opACI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) + static_cast<uint16_t>(data) + conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opSUB(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(*_getAddr(src));
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opSUI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(data);
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opSBB(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(*_getAddr(src)) - conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opSBI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - static_cast<uint16_t>(data) - conditionFlags.cy;
+    registers.a = result & 0xff;
+
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opANA(SrcDestId8080 src) {
+    registers.a = registers.a & *_getAddr(src);
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+}
+
+void CPU_8080::opANI(uint8_t data) {
+    registers.a = registers.a & data;
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opORA(SrcDestId8080 src) {
+    registers.a = registers.a | *_getAddr(src);
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+    conditionFlags.ac = 0; // AC flag is cleared
+}
+
+void CPU_8080::opORI(uint8_t data) {
+    registers.a = registers.a | data;
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+    conditionFlags.ac = 0; // AC flag is cleared
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opXRA(SrcDestId8080 src) {
+    registers.a = registers.a ^ *_getAddr(src);
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+    conditionFlags.ac = 0; // AC flag is cleared
+}
+
+void CPU_8080::opXRI(uint8_t data) {
+    registers.a = registers.a ^ data;
+    _setArithmeticConditionFlags(registers.a);
+    conditionFlags.cy = 0; // CY flag is cleared
+    conditionFlags.ac = 0; // AC flag is cleared
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opCMP(SrcDestId8080 src) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - *_getAddr(src);
+    _setArithmeticConditionFlags(result);
+}
+
+void CPU_8080::opCPI(uint8_t data) {
+    uint16_t result = static_cast<uint16_t>(registers.a) - data;
+    _setArithmeticConditionFlags(result);
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opINX(RegisterPairId8080 rp) {
+    registers.setPair(rp, registers.getPair(rp) + 1);
+}
+
+void CPU_8080::opDCX(RegisterPairId8080 rp) {
+    registers.setPair(rp, registers.getPair(rp) - 1);
+}
+
+void CPU_8080::opINR(SrcDestId8080 dest) {
+    uint8_t result = *_getAddr(dest) += 1;
+
+    bool prevCy = conditionFlags.cy;
+    _setArithmeticConditionFlags(result);
+    conditionFlags.cy = prevCy; // CY isn't affected
+}
+
+void CPU_8080::opDCR(SrcDestId8080 dest) {
+    uint8_t result = *_getAddr(dest) -= 1;
+
+    bool prevCy = conditionFlags.cy;
+    _setArithmeticConditionFlags(result);
+    conditionFlags.cy = prevCy; // CY isn't affected
+}
+
+void CPU_8080::opRLC() {
+    uint8_t a7Bit = registers.a >> 7;
+    registers.a = (registers.a << 1) + a7Bit;
+    conditionFlags.cy = a7Bit;  
+}
+
+void CPU_8080::opRRC() {
+    uint8_t a0Bit = registers.a & 0b1;
+    registers.a = (registers.a >> 1) + (a0Bit << 7);
+    conditionFlags.cy = a0Bit;  
+}
+
+void CPU_8080::opRAL() {
+    uint8_t a7Bit = registers.a >> 7;
+    registers.a = (registers.a << 1) + conditionFlags.cy;
+    conditionFlags.cy = a7Bit; 
+}
+
+void CPU_8080::opRAR() {
+    uint8_t a0Bit = registers.a & 0b1;
+    registers.a = (registers.a >> 1) + (conditionFlags.cy << 7);
+    conditionFlags.cy = a0Bit; 
+}
+
+void CPU_8080::opCMA() {
+    registers.a = ~registers.a;
+}
+
+void CPU_8080::opCMC() {
+    conditionFlags.cy = ~conditionFlags.cy;
+}
+
+void CPU_8080::opSTC() {
+    conditionFlags.cy = 1;
+}
+
+void CPU_8080::opDAD(RegisterPairId8080 rp) {
+    uint32_t result = static_cast<uint32_t>(registers.getPair(HL)) + static_cast<uint32_t>(registers.getPair(rp));
+    conditionFlags.cy = result > 0xffff;
+    registers.setPair(HL, static_cast<uint16_t>(result));
+}
+
+void CPU_8080::opDAA() {
+    if ((registers.a & 0x0f) > 9 || conditionFlags.ac) {
+        registers.a += 6;
+        conditionFlags.ac = 1;
+    } else { conditionFlags.ac = 0; }
+
+    if ((registers.a >> 4) > 9 || conditionFlags.cy) {
+        registers.a += 6 << 4;
+        conditionFlags.cy = 1;
+    }
+
+    conditionFlags.z = registers.a == 0;
+    conditionFlags.s = ((registers.a & 0x80) != 0);
+    conditionFlags.p = determineParity(registers.a);
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 
     if (nibble0 <= 3) {
-        if (nibble1 == 6 || nibble1 == 0xE) {
-            // MVI 0|0||D|D|D|1|1|0 + d8
-            opMVI(static_cast<SrcDestId8080>(*opcode & 0b00111000), opcode[1]);
-        }
+        if (nibble1 == 1) 
+            opLXI(_getRp(*opcode), opcode[1], opcode[2]);
 
-        if (nibble1 = 1) {
-            // LXI 0|0|R|P|0|0|0|1 + d16
-            opLXI(static_cast<RegisterPairId8080>(*opcode & 0b00110000), opcode[1], opcode[2]);
-        }
-    }
+        if (nibble1 == 3)
+            opINX(_getRp(*opcode));
+        if (nibble1 == 0xB)
+            opDCX(_getRp(*opcode));
 
-    if (nibble0 >= 4 && nibble0 <= 7) {
+        if (nibble1 == 4 || nibble1 == 0xC)
+            opINR(_getDest(*opcode));
+        
+        if (nibble1 == 5 || nibble1 == 0xD)
+            opDCR(_getDest(*opcode));
+        
+        if (nibble1 == 6 || nibble1 == 0xE)
+            opMVI(_getDest(*opcode), opcode[1]);
+        
+        if (nibble1 == 9)
+            opDAD(_getRp(*opcode));
+    } else if (nibble0 >= 4 && nibble0 <= 7) {
         if (nibble1 == 6) { /* HLT */ }
+        else
+            opMOV(_getDest(*opcode), _getSrc(*opcode));
+    } else if (nibble0 == 8) {
+        if (nibble1 <= 7)
+            opADD(_getSrc(*opcode));
+        else
+            opADC(_getSrc(*opcode));
+    } else if (nibble0 == 9) {
+        if (nibble1 <= 7)
+            opSUB(_getSrc(*opcode));
+        else
+            opSBB(_getSrc(*opcode));
+    } else if (nibble0 == 0xA) {
+        if (nibble1 <= 7)
+            opANA(_getSrc(*opcode));
+        else
+            opXRA(_getSrc(*opcode));
+    } else if (nibble0 == 0xB) {
+        if (nibble1 <= 7)
+            opORA(_getSrc(*opcode));
+        else
+            opCMP(_getSrc(*opcode));
+        } else {
+        switch (*opcode) {
+            case 0x00:
+            case 0x10:
+            case 0x20:
+            case 0x30:
+            case 0x08:
+            case 0x18:
+            case 0x28:
+            case 0x38:
+                break; // NOP
+            
+            case 0x07: opRLC(); break;
+            
+            case 0x17: opRAL(); break;
+            
+            case 0x0F: opRRC(); break;
+            
+            case 0x1F: opRAR(); break;
 
-        // MOV 0|1|D|D|D|S|S|S
-        opMOV(static_cast<SrcDestId8080>(*opcode & 0b00111000), static_cast<SrcDestId8080>(*opcode & 0b00000111));
-        return true;
-    }
+            case 0x27: opDAA(); break;
+            
+            case 0x37: opSTC(); break;
+            
+            case 0x2F: opCMA(); break;
+            
+            case 0x3F: opCMC(); break;
 
-    switch (*opcode) {
-        case 0x00:
-        case 0x10:
-        case 0x20:
-        case 0x30:
-        case 0x08:
-        case 0x18:
-        case 0x28:
-        case 0x38:
-            break; // NOP
+            case 0xC6: opADI(opcode[1]); break;
+            
+            case 0xCE: opACI(opcode[1]); break;
+            
+            case 0xD6: opSUI(opcode[1]); break;
+            
+            case 0xDE: opSBI(opcode[1]); break;
+            
+            case 0xE6: opANI(opcode[1]); break;
+            
+            case 0xEE: opXRI(opcode[1]); break;
+            
+            case 0xF6: opORI(opcode[1]); break;
+            
+            case 0xFE: opCPI(opcode[1]); break;
 
-        default:
-            printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);
-            return false;
+            default:
+                printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);
+                return false;
+        }
     }
 
     registers.pc++;
+    return true;
 }
