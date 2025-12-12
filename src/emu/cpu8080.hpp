@@ -128,6 +128,8 @@ private:
     void opCMA();
     void opCMC();
     void opSTC();
+    void opDAD(RegisterPairId8080 rp);
+    void opDAA();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

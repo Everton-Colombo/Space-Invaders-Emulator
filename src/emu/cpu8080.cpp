@@ -229,16 +229,36 @@ void CPU_8080::opSTC() {
     conditionFlags.cy = 1;
 }
 
+void CPU_8080::opDAD(RegisterPairId8080 rp) {
+    uint32_t result = static_cast<uint32_t>(registers.getPair(HL)) + static_cast<uint32_t>(registers.getPair(rp));
+    conditionFlags.cy = result > 0xffff;
+    registers.setPair(HL, static_cast<uint16_t>(result));
+}
+
+void CPU_8080::opDAA() {
+    if ((registers.a & 0x0f) > 9 || conditionFlags.ac) {
+        registers.a += 6;
+        conditionFlags.ac = 1;
+    } else { conditionFlags.ac = 0; }
+
+    if ((registers.a >> 4) > 9 || conditionFlags.cy) {
+        registers.a += 6 << 4;
+        conditionFlags.cy = 1;
+    }
+
+    conditionFlags.z = registers.a == 0;
+    conditionFlags.s = ((registers.a & 0x80) != 0);
+    conditionFlags.p = determineParity(registers.a);
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 
     if (nibble0 <= 3) {
-        if (nibble1 == 1) {
-            // LXI 0|0|R|P|0|0|0|1 + d16
+        if (nibble1 == 1) 
             opLXI(_getRp(*opcode), opcode[1], opcode[2]);
-        }
 
         if (nibble1 == 3)
             opINX(_getRp(*opcode));
@@ -251,122 +271,85 @@ bool CPU_8080::tick() {
         if (nibble1 == 5 || nibble1 == 0xD)
             opDCR(_getDest(*opcode));
         
-        if (nibble1 == 6 || nibble1 == 0xE) {
-            // MVI 0|0||D|D|D|1|1|0 + d8
+        if (nibble1 == 6 || nibble1 == 0xE)
             opMVI(_getDest(*opcode), opcode[1]);
-        }
-    }
-
-    if (nibble0 >= 4 && nibble0 <= 7) {
+        
+        if (nibble1 == 9)
+            opDAD(_getRp(*opcode));
+    } else if (nibble0 >= 4 && nibble0 <= 7) {
         if (nibble1 == 6) { /* HLT */ }
         else
-            opMOV(_getDest(*opcode), _getSrc(*opcode)); // MOV 0|1|D|D|D|S|S|S
-    }
-
-    if (nibble0 == 8) {
+            opMOV(_getDest(*opcode), _getSrc(*opcode));
+    } else if (nibble0 == 8) {
         if (nibble1 <= 7)
-            opADD(_getSrc(*opcode)); // ADD 1|0|0|0|0|S|S|S
+            opADD(_getSrc(*opcode));
         else
-            opADC(_getSrc(*opcode)); // ADC 1|0|0|0|1|S|S|S 
-    }
-
-    if (nibble0 == 9) {
+            opADC(_getSrc(*opcode));
+    } else if (nibble0 == 9) {
         if (nibble1 <= 7)
             opSUB(_getSrc(*opcode));
         else
             opSBB(_getSrc(*opcode));
-    }
-
-    if (nibble0 == 0xA) {
+    } else if (nibble0 == 0xA) {
         if (nibble1 <= 7)
             opANA(_getSrc(*opcode));
         else
             opXRA(_getSrc(*opcode));
-    }
-
-    if (nibble0 == 0xB) {
+    } else if (nibble0 == 0xB) {
         if (nibble1 <= 7)
             opORA(_getSrc(*opcode));
         else
             opCMP(_getSrc(*opcode));
-    }
-        
+        } else {
+        switch (*opcode) {
+            case 0x00:
+            case 0x10:
+            case 0x20:
+            case 0x30:
+            case 0x08:
+            case 0x18:
+            case 0x28:
+            case 0x38:
+                break; // NOP
+            
+            case 0x07: opRLC(); break;
+            
+            case 0x17: opRAL(); break;
+            
+            case 0x0F: opRRC(); break;
+            
+            case 0x1F: opRAR(); break;
 
-    switch (*opcode) {
-        case 0x00:
-        case 0x10:
-        case 0x20:
-        case 0x30:
-        case 0x08:
-        case 0x18:
-        case 0x28:
-        case 0x38:
-            break; // NOP
-        
-        case 0x07:
-            opRLC();
-            break;
-        
-        case 0x17:
-            opRAL();
-            break;
-        
-        case 0x0F:
-            opRRC();
-            break;
-        
-        case 0x1F:
-            opRAR();
-            break;
-        
-        case 0x37:
-            opSTC();
-            break;
-        
-        case 0x2F:
-            opCMA();
-            break;
-        
-        case 0x3F:
-            opCMC();
-            break;
+            case 0x27: opDAA(); break;
+            
+            case 0x37: opSTC(); break;
+            
+            case 0x2F: opCMA(); break;
+            
+            case 0x3F: opCMC(); break;
 
-        case 0xC6:
-            opADI(opcode[1]);
-            break;
-        
-        case 0xCE:
-            opACI(opcode[1]);
-            break;
-        
-        case 0xD6:
-            opSUI(opcode[1]);
-            break;
-        
-        case 0xDE:
-            opSBI(opcode[1]);
-            break;
-        
-        case 0xE6:
-            opANI(opcode[1]);
-            break;
-        
-        case 0xEE:
-            opXRI(opcode[1]);
-            break;
-        
-        case 0xF6:
-            opORI(opcode[1]);
-            break;
-        
-        case 0xFE:
-            opCPI(opcode[1]);
-            break;
+            case 0xC6: opADI(opcode[1]); break;
+            
+            case 0xCE: opACI(opcode[1]); break;
+            
+            case 0xD6: opSUI(opcode[1]); break;
+            
+            case 0xDE: opSBI(opcode[1]); break;
+            
+            case 0xE6: opANI(opcode[1]); break;
+            
+            case 0xEE: opXRI(opcode[1]); break;
+            
+            case 0xF6: opORI(opcode[1]); break;
+            
+            case 0xFE: opCPI(opcode[1]); break;
 
-        default:
-            printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);
-            return false;
+            default:
+                printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);
+                return false;
+        }
     }
 
     registers.pc++;
+    return true;
 }
