@@ -169,55 +169,90 @@ void CPU_8080::opCPI(uint8_t data) {
     registers.pc += 1;
 }
 
+void CPU_8080::opINX(RegisterPairId8080 rp) {
+    registers.setPair(rp, registers.getPair(rp) + 1);
+}
+
+void CPU_8080::opDCX(RegisterPairId8080 rp) {
+    registers.setPair(rp, registers.getPair(rp) - 1);
+}
+
+void CPU_8080::opINR(SrcDestId8080 dest) {
+    uint8_t result = *_getAddr(dest) += 1;
+
+    bool prevCy = conditionFlags.cy;
+    _setArithmeticConditionFlags(result);
+    conditionFlags.cy = prevCy; // CY isn't affected
+}
+
+void CPU_8080::opDCR(SrcDestId8080 dest) {
+    uint8_t result = *_getAddr(dest) -= 1;
+
+    bool prevCy = conditionFlags.cy;
+    _setArithmeticConditionFlags(result);
+    conditionFlags.cy = prevCy; // CY isn't affected
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 
     if (nibble0 <= 3) {
-        if (nibble1 = 1) {
+        if (nibble1 == 1) {
             // LXI 0|0|R|P|0|0|0|1 + d16
-            opLXI(static_cast<RegisterPairId8080>(*opcode & 0b00110000), opcode[1], opcode[2]);
+            opLXI(_getRp(*opcode), opcode[1], opcode[2]);
         }
+
+        if (nibble1 == 3)
+            opINX(_getRp(*opcode));
+        if (nibble1 == 0xB)
+            opDCX(_getRp(*opcode));
+
+        if (nibble1 == 4 || nibble1 == 0xC)
+            opINR(_getDest(*opcode));
+        
+        if (nibble1 == 5 || nibble1 == 0xD)
+            opDCR(_getDest(*opcode));
         
         if (nibble1 == 6 || nibble1 == 0xE) {
             // MVI 0|0||D|D|D|1|1|0 + d8
-            opMVI(static_cast<SrcDestId8080>(*opcode & 0b00111000), opcode[1]);
+            opMVI(_getDest(*opcode), opcode[1]);
         }
     }
 
     if (nibble0 >= 4 && nibble0 <= 7) {
         if (nibble1 == 6) { /* HLT */ }
         else
-            opMOV(static_cast<SrcDestId8080>(*opcode & 0b00111000), static_cast<SrcDestId8080>(*opcode & 0b00000111)); // MOV 0|1|D|D|D|S|S|S
+            opMOV(_getDest(*opcode), _getSrc(*opcode)); // MOV 0|1|D|D|D|S|S|S
     }
 
     if (nibble0 == 8) {
         if (nibble1 <= 7)
-            opADD(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADD 1|0|0|0|0|S|S|S
+            opADD(_getSrc(*opcode)); // ADD 1|0|0|0|0|S|S|S
         else
-            opADC(static_cast<SrcDestId8080>(*opcode & 0b00000111)); // ADC 1|0|0|0|1|S|S|S 
+            opADC(_getSrc(*opcode)); // ADC 1|0|0|0|1|S|S|S 
     }
 
     if (nibble0 == 9) {
         if (nibble1 <= 7)
-            opSUB(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opSUB(_getSrc(*opcode));
         else
-            opSBB(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opSBB(_getSrc(*opcode));
     }
 
     if (nibble0 == 0xA) {
         if (nibble1 <= 7)
-            opANA(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opANA(_getSrc(*opcode));
         else
-            opXRA(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opXRA(_getSrc(*opcode));
     }
 
     if (nibble0 == 0xB) {
         if (nibble1 <= 7)
-            opORA(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opORA(_getSrc(*opcode));
         else
-            opCMP(static_cast<SrcDestId8080>(*opcode & 0b00000111));
+            opCMP(_getSrc(*opcode));
     }
         
 

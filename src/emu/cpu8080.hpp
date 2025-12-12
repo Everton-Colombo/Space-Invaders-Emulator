@@ -49,6 +49,10 @@ struct Registers8080 {
                 break;
         }
     }
+
+    void setPair(RegisterPairId8080 rp, uint16_t data) {
+        setPair(rp, static_cast<uint8_t>(data & 0x00ff), static_cast<uint8_t>(data >> 8));
+    }
 };
 
 enum SrcDestId8080 {
@@ -80,11 +84,23 @@ private:
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
 
+    static inline SrcDestId8080 _getSrc(uint8_t op) {
+        return static_cast<SrcDestId8080>(op & 0b00000111);
+    }
+
+    static inline SrcDestId8080 _getDest(uint8_t op) {
+        return static_cast<SrcDestId8080>(op & 0b00111000);
+    }
+
+    static inline RegisterPairId8080 _getRp(uint8_t op) {
+        return static_cast<RegisterPairId8080>(op & 0b00110000);
+    }
+
     void opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh);
     void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
     void opMVI(SrcDestId8080 dest, uint8_t data);
 
-    // Arithmetic Ops:
+    // Arithmetic Group:
     void opADD(SrcDestId8080 src);
     void opADI(uint8_t data);
     void opADC(SrcDestId8080 src);
@@ -101,6 +117,10 @@ private:
     void opORI(uint8_t data);
     void opCMP(SrcDestId8080 src);
     void opCPI(uint8_t data);
+    void opINX(RegisterPairId8080 rp);
+    void opDCX(RegisterPairId8080 rp);
+    void opINR(SrcDestId8080 dest);
+    void opDCR(SrcDestId8080 dest);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
