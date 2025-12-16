@@ -155,6 +155,10 @@ private:
     void opDAD(RegisterPairId8080 rp);
     void opDAA();
 
+    // Branch Group:
+    void opJMP(uint8_t al, uint8_t ah);
+    void opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
         this->memory = memoryBaseAddress;

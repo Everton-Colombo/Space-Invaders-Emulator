@@ -307,6 +307,19 @@ bool CPU_8080::_evalCond(ConditionId8080 ccc) {
     }
 }
 
+void CPU_8080::opJMP(uint8_t al, uint8_t ah) {
+    registers.setPair(SP, al, ah);
+
+    registers.pc += 2;
+}
+
+void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
+    if (_evalCond(ccc))
+        registers.setPair(SP, al, ah);
+
+    registers.pc += 2;
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -393,19 +406,27 @@ bool CPU_8080::tick() {
         else
             opCMP(_getSrc(*opcode));
     } else {
-        switch (*opcode) {
-            case 0xC6: opADI(opcode[1]); break;
-            case 0xCE: opACI(opcode[1]); break;
-            case 0xD6: opSUI(opcode[1]); break;
-            case 0xDE: opSBI(opcode[1]); break;
-            case 0xE6: opANI(opcode[1]); break;
-            case 0xEE: opXRI(opcode[1]); break;
-            case 0xF6: opORI(opcode[1]); break;
-            case 0xFE: opCPI(opcode[1]); break;
+        if (nibble1 == 2 || nibble1 == 0xA) {
+            opJcondition(_getCond(*opcode), opcode[1], opcode[2]);
+        } else {
+            switch (*opcode) {
+                case 0xC6: opADI(opcode[1]); break;
+                case 0xCE: opACI(opcode[1]); break;
+                case 0xD6: opSUI(opcode[1]); break;
+                case 0xDE: opSBI(opcode[1]); break;
+                case 0xE6: opANI(opcode[1]); break;
+                case 0xEE: opXRI(opcode[1]); break;
+                case 0xF6: opORI(opcode[1]); break;
+                case 0xFE: opCPI(opcode[1]); break;
 
-            case 0xEB: opXCHG(); break;
+                case 0xEB: opXCHG(); break;
 
-            default: goto not_implemented;
+                case 0xC3:
+                case 0xCB:
+                    opJMP(opcode[1], opcode[2]);
+
+                default: goto not_implemented;
+            }
         }
     }
 
