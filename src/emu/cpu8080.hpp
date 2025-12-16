@@ -104,6 +104,9 @@ private:
     void opSTA(uint8_t al, uint8_t ah);
     void opLHLD(uint8_t al, uint8_t ah);
     void opSHLD(uint8_t al, uint8_t ah);
+    void opLDAX(RegisterPairId8080 rp);
+    void opSTAX(RegisterPairId8080 rp);
+    void opXCHG();
 
     // Arithmetic Group:
     void opADD(SrcDestId8080 src);

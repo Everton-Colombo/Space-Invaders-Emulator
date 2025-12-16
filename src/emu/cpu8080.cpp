@@ -1,6 +1,7 @@
 #include "cpu8080.hpp"
 #include <iostream>
 #include <cstdio>
+#include <utility>
 
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
@@ -56,6 +57,19 @@ void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
     memory[addr + 1] = registers.h;
 
     registers.pc += 2;
+}
+
+void CPU_8080::opLDAX(RegisterPairId8080 rp) {
+    registers.a = memory[registers.getPair(rp)];
+}
+
+void CPU_8080::opSTAX(RegisterPairId8080 rp) {
+    memory[registers.getPair(rp)] = registers.a;
+}
+
+void CPU_8080::opXCHG() {
+    std::swap(registers.h, registers.d);
+    std::swap(registers.l, registers.e);
 }
 
 // Arithemetic Group:
@@ -327,9 +341,16 @@ bool CPU_8080::tick() {
             case 0x3F: opCMC(); break;
             
             case 0x22: opSHLD(opcode[1], opcode[2]); break; 
-            case 0x32: opSTA(opcode[1], opcode[2]); break;
+            case 0x32: opSTA(opcode[1], opcode[2]);  break;
             case 0x2A: opLHLD(opcode[1], opcode[2]); break;
-            case 0x3A: opLDA(opcode[1], opcode[2]); break;
+            case 0x3A: opLDA(opcode[1], opcode[2]);  break;
+
+            case 0x02:
+            case 0x12:
+                opSTAX(_getRp(*opcode)); break;
+            case 0x0A:
+            case 0x1A:
+                opLDAX(_getRp(*opcode)); break;
 
             default: goto not_implemented;
         }
@@ -367,6 +388,8 @@ bool CPU_8080::tick() {
             case 0xEE: opXRI(opcode[1]); break;
             case 0xF6: opORI(opcode[1]); break;
             case 0xFE: opCPI(opcode[1]); break;
+
+            case 0xEB: opXCHG(); break;
 
             default: goto not_implemented;
         }
