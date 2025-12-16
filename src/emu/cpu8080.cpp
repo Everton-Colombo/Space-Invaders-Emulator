@@ -1,6 +1,7 @@
 #include "cpu8080.hpp"
 #include <iostream>
 #include <cstdio>
+#include <utility>
 
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
@@ -16,6 +17,8 @@ uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     }
 } 
 
+// Data Transfer Group:
+
 void CPU_8080::opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
     registers.setPair(rp, dl, dh);
     registers.pc += 2;
@@ -30,7 +33,46 @@ void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
     registers.pc++;
 }
 
-// Arithemetic Ops
+void CPU_8080::opLDA(uint8_t al, uint8_t ah) {
+    registers.a = memory[(static_cast<uint16_t>(ah) << 8) | al];
+    registers.pc += 2;
+}
+
+void CPU_8080::opSTA(uint8_t al, uint8_t ah) {
+    memory[(static_cast<uint16_t>(ah) << 8) | al] = registers.a;
+    registers.pc += 2;
+}
+
+void CPU_8080::opLHLD(uint8_t al, uint8_t ah) {
+    uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
+    registers.l = memory[addr];
+    registers.h = memory[addr + 1];
+
+    registers.pc += 2;
+}
+
+void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
+    uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
+    memory[addr] = registers.l;
+    memory[addr + 1] = registers.h;
+
+    registers.pc += 2;
+}
+
+void CPU_8080::opLDAX(RegisterPairId8080 rp) {
+    registers.a = memory[registers.getPair(rp)];
+}
+
+void CPU_8080::opSTAX(RegisterPairId8080 rp) {
+    memory[registers.getPair(rp)] = registers.a;
+}
+
+void CPU_8080::opXCHG() {
+    std::swap(registers.h, registers.d);
+    std::swap(registers.l, registers.e);
+}
+
+// Arithemetic Group:
 bool determineParity(uint8_t n) {
     int count = 0;
     while (n > 0) {
@@ -276,6 +318,42 @@ bool CPU_8080::tick() {
         
         if (nibble1 == 9)
             opDAD(_getRp(*opcode));
+        
+        switch (*opcode) {
+            case 0x00:
+            case 0x10:
+            case 0x20:
+            case 0x30:
+            case 0x08:
+            case 0x18:
+            case 0x28:
+            case 0x38:
+                break; // NOP
+            
+            case 0x07: opRLC(); break;
+            case 0x17: opRAL(); break;
+            case 0x0F: opRRC(); break;
+            case 0x1F: opRAR(); break;
+
+            case 0x27: opDAA(); break;
+            case 0x37: opSTC(); break;
+            case 0x2F: opCMA(); break;
+            case 0x3F: opCMC(); break;
+            
+            case 0x22: opSHLD(opcode[1], opcode[2]); break; 
+            case 0x32: opSTA(opcode[1], opcode[2]);  break;
+            case 0x2A: opLHLD(opcode[1], opcode[2]); break;
+            case 0x3A: opLDA(opcode[1], opcode[2]);  break;
+
+            case 0x02:
+            case 0x12:
+                opSTAX(_getRp(*opcode)); break;
+            case 0x0A:
+            case 0x1A:
+                opLDAX(_getRp(*opcode)); break;
+
+            default: goto not_implemented;
+        }
     } else if (nibble0 >= 4 && nibble0 <= 7) {
         if (nibble1 == 6) { /* HLT */ }
         else
@@ -300,56 +378,28 @@ bool CPU_8080::tick() {
             opORA(_getSrc(*opcode));
         else
             opCMP(_getSrc(*opcode));
-        } else {
+    } else {
         switch (*opcode) {
-            case 0x00:
-            case 0x10:
-            case 0x20:
-            case 0x30:
-            case 0x08:
-            case 0x18:
-            case 0x28:
-            case 0x38:
-                break; // NOP
-            
-            case 0x07: opRLC(); break;
-            
-            case 0x17: opRAL(); break;
-            
-            case 0x0F: opRRC(); break;
-            
-            case 0x1F: opRAR(); break;
-
-            case 0x27: opDAA(); break;
-            
-            case 0x37: opSTC(); break;
-            
-            case 0x2F: opCMA(); break;
-            
-            case 0x3F: opCMC(); break;
-
             case 0xC6: opADI(opcode[1]); break;
-            
             case 0xCE: opACI(opcode[1]); break;
-            
             case 0xD6: opSUI(opcode[1]); break;
-            
             case 0xDE: opSBI(opcode[1]); break;
-            
             case 0xE6: opANI(opcode[1]); break;
-            
             case 0xEE: opXRI(opcode[1]); break;
-            
             case 0xF6: opORI(opcode[1]); break;
-            
             case 0xFE: opCPI(opcode[1]); break;
 
-            default:
-                printf("ERROR: Unimplemented instruction (%02x)\n", *opcode);
-                return false;
+            case 0xEB: opXCHG(); break;
+
+            default: goto not_implemented;
         }
     }
 
     registers.pc++;
     return true;
+
+    not_implemented: {
+        printf("Instruction not implemented: 0x%02x!\n", *opcode);
+        return false;
+    }
 }

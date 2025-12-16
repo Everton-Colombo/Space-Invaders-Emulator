@@ -96,9 +96,17 @@ private:
         return static_cast<RegisterPairId8080>(op & 0b00110000);
     }
 
+    // Data Transfer Group:
     void opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh);
     void opMOV(SrcDestId8080 dest, SrcDestId8080 src);
     void opMVI(SrcDestId8080 dest, uint8_t data);
+    void opLDA(uint8_t al, uint8_t ah);
+    void opSTA(uint8_t al, uint8_t ah);
+    void opLHLD(uint8_t al, uint8_t ah);
+    void opSHLD(uint8_t al, uint8_t ah);
+    void opLDAX(RegisterPairId8080 rp);
+    void opSTAX(RegisterPairId8080 rp);
+    void opXCHG();
 
     // Arithmetic Group:
     void opADD(SrcDestId8080 src);
