@@ -32,13 +32,29 @@ void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
     registers.pc++;
 }
 
-void CPU_8080::opLDA(uint8_t dl, uint8_t dh) {
-    registers.a = memory[(static_cast<uint16_t>(dh) << 8) | dl];
+void CPU_8080::opLDA(uint8_t al, uint8_t ah) {
+    registers.a = memory[(static_cast<uint16_t>(ah) << 8) | al];
     registers.pc += 2;
 }
 
-void CPU_8080::opSTA(uint8_t dl, uint8_t dh) {
-    memory[(static_cast<uint16_t>(dh) << 8) | dl] = registers.a;
+void CPU_8080::opSTA(uint8_t al, uint8_t ah) {
+    memory[(static_cast<uint16_t>(ah) << 8) | al] = registers.a;
+    registers.pc += 2;
+}
+
+void CPU_8080::opLHLD(uint8_t al, uint8_t ah) {
+    uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
+    registers.l = memory[addr];
+    registers.h = memory[addr + 1];
+
+    registers.pc += 2;
+}
+
+void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
+    uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
+    memory[addr] = registers.l;
+    memory[addr + 1] = registers.h;
+
     registers.pc += 2;
 }
 
@@ -304,11 +320,15 @@ bool CPU_8080::tick() {
             case 0x17: opRAL(); break;
             case 0x0F: opRRC(); break;
             case 0x1F: opRAR(); break;
+
             case 0x27: opDAA(); break;
             case 0x37: opSTC(); break;
             case 0x2F: opCMA(); break;
             case 0x3F: opCMC(); break;
+            
+            case 0x22: opSHLD(opcode[1], opcode[2]); break; 
             case 0x32: opSTA(opcode[1], opcode[2]); break;
+            case 0x2A: opLHLD(opcode[1], opcode[2]); break;
             case 0x3A: opLDA(opcode[1], opcode[2]); break;
 
             default: goto not_implemented;
