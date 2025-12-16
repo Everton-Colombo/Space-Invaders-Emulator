@@ -293,6 +293,20 @@ void CPU_8080::opDAA() {
     conditionFlags.p = determineParity(registers.a);
 }
 
+// Branch Group:
+bool CPU_8080::_evalCond(ConditionId8080 ccc) {
+    switch (ccc) {
+        case NZ: return !conditionFlags.z;
+        case  Z: return  conditionFlags.z;
+        case NC: return !conditionFlags.cy;
+        case  C: return  conditionFlags.cy;
+        case PO: return !conditionFlags.p;
+        case PE: return  conditionFlags.p;
+        case  P: return !conditionFlags.s;
+        case  M: return  conditionFlags.s;  
+    }
+}
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;

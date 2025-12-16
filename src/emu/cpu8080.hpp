@@ -73,6 +73,17 @@ enum RegisterPairId8080 {
     SP
 };
 
+enum ConditionId8080 {
+    NZ,
+    Z,
+    NC,
+    C,
+    PO,
+    PE,
+    P,
+    M
+};
+
 class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags;
@@ -83,6 +94,7 @@ private:
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
+    bool _evalCond(ConditionId8080 ccc);
 
     static inline SrcDestId8080 _getSrc(uint8_t op) {
         return static_cast<SrcDestId8080>(op & 0b00000111);
@@ -94,6 +106,10 @@ private:
 
     static inline RegisterPairId8080 _getRp(uint8_t op) {
         return static_cast<RegisterPairId8080>(op & 0b00110000);
+    }
+
+    static inline ConditionId8080 _getCond(uint8_t op) {
+        return static_cast<ConditionId8080>(op & 0b00111000);
     }
 
     // Data Transfer Group:
