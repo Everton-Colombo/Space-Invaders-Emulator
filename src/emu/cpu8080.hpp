@@ -47,6 +47,9 @@ struct Registers8080 {
             case SP:
                 sp = (static_cast<uint16_t>(dh) << 8) | dl;
                 break;
+            case PC:
+                pc = (static_cast<uint16_t>(dh) << 8) | dl;
+                break;
         }
     }
 
@@ -70,7 +73,8 @@ enum RegisterPairId8080 {
     BC,
     DE,
     HL,
-    SP
+    SP,
+    PC
 };
 
 enum ConditionId8080 {
@@ -158,6 +162,9 @@ private:
     // Branch Group:
     void opJMP(uint8_t al, uint8_t ah);
     void opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+    void opCALL(uint8_t al, uint8_t ah);
+    void opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

@@ -308,16 +308,27 @@ bool CPU_8080::_evalCond(ConditionId8080 ccc) {
 }
 
 void CPU_8080::opJMP(uint8_t al, uint8_t ah) {
-    registers.setPair(SP, al, ah);
-
-    registers.pc += 2;
+    registers.setPair(PC, al, ah);
 }
 
 void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
     if (_evalCond(ccc))
-        registers.setPair(SP, al, ah);
+        registers.setPair(PC, al, ah);
+}
 
-    registers.pc += 2;
+void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
+    uint8_t pch = (registers.pc & 0xff00) >> 8;
+    uint8_t pcl =  registers.pc & 0x00ff;
+
+    memory[registers.sp - 1] = pch;
+    memory[registers.sp - 2] = pcl;
+    registers.sp -= 2;
+    registers.setPair(PC, al, ah);
+}
+
+void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
+    if (_evalCond(ccc))
+        opCALL(al, ah);
 }
 
 bool CPU_8080::tick() {
@@ -408,6 +419,13 @@ bool CPU_8080::tick() {
     } else {
         if (nibble1 == 2 || nibble1 == 0xA) {
             opJcondition(_getCond(*opcode), opcode[1], opcode[2]);
+            return true;
+        } else if (nibble1 == 0xD) {
+            opCALL(opcode[1], opcode[2]);
+            return true;
+        } else if (nibble1 == 4 || nibble1 == 0xC) {
+            opCcondition(_getCond(*opcode), opcode[1], opcode[2]);
+            return true;
         } else {
             switch (*opcode) {
                 case 0xC6: opADI(opcode[1]); break;
@@ -423,7 +441,7 @@ bool CPU_8080::tick() {
 
                 case 0xC3:
                 case 0xCB:
-                    opJMP(opcode[1], opcode[2]);
+                    opJMP(opcode[1], opcode[2]); return true;
 
                 default: goto not_implemented;
             }
