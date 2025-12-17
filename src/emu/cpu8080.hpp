@@ -94,7 +94,7 @@ private:
     Registers8080 registers;
 
     uint8_t* memory;
-    bool intEnable;
+    bool interruptsEnabled;
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
@@ -169,6 +169,9 @@ private:
     void opRST(uint8_t nnn);
     void opPCHL();
 
+    // Stack, I/O, and Machine Control Group: 
+    void opEI();
+    void opDI();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

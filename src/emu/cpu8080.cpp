@@ -356,6 +356,14 @@ void CPU_8080::opPCHL() {
     registers.setPair(PC, registers.l, registers.h);
 }
 
+// Stack, I/O, and Machine Control Group: 
+void CPU_8080::opEI(){
+    interruptsEnabled = true;
+}
+
+void CPU_8080::opDI(){
+    interruptsEnabled = false;
+}
 
 
 bool CPU_8080::tick() {
@@ -480,6 +488,9 @@ bool CPU_8080::tick() {
                     opRET(); return true;
                 
                 case 0xE9: opPCHL(); break;
+
+                case 0xF3: opDI(); break;
+                case 0xFB: opEI(); break;
 
                 default: goto not_implemented;
             }
