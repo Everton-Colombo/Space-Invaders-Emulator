@@ -293,6 +293,71 @@ void CPU_8080::opDAA() {
     conditionFlags.p = determineParity(registers.a);
 }
 
+// Branch Group:
+bool CPU_8080::_evalCond(ConditionId8080 ccc) {
+    switch (ccc) {
+        case NZ: return !conditionFlags.z;
+        case  Z: return  conditionFlags.z;
+        case NC: return !conditionFlags.cy;
+        case  C: return  conditionFlags.cy;
+        case PO: return !conditionFlags.p;
+        case PE: return  conditionFlags.p;
+        case  P: return !conditionFlags.s;
+        case  M: return  conditionFlags.s;  
+    }
+}
+
+void CPU_8080::opJMP(uint8_t al, uint8_t ah) {
+    registers.setPair(PC, al, ah);
+}
+
+void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
+    if (_evalCond(ccc))
+        registers.setPair(PC, al, ah);
+}
+
+void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
+    uint8_t pch = (registers.pc & 0xff00) >> 8;
+    uint8_t pcl =  registers.pc & 0x00ff;
+
+    memory[registers.sp - 1] = pch;
+    memory[registers.sp - 2] = pcl;
+    registers.sp -= 2;
+    registers.setPair(PC, al, ah);
+}
+
+void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
+    if (_evalCond(ccc))
+        opCALL(al, ah);
+}
+
+void CPU_8080::opRET() {
+    registers.setPair(PC, memory[registers.sp], memory[registers.sp + 1]);
+    registers.sp += 2;
+}
+
+void CPU_8080::opRcondition(ConditionId8080 ccc) {
+    if (_evalCond(ccc))
+        opRET();
+}
+
+void CPU_8080::opRST(uint8_t nnn) {
+    uint8_t pch = (registers.pc & 0xff00) >> 8;
+    uint8_t pcl =  registers.pc & 0x00ff;
+
+    memory[registers.sp - 1] = pch;
+    memory[registers.sp - 2] = pcl;
+    registers.sp -= 2;
+
+    registers.pc = 8 * nnn;
+}
+
+void CPU_8080::opPCHL() {
+    registers.setPair(PC, registers.l, registers.h);
+}
+
+
+
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
     uint8_t nibble0 = (*opcode) & 0b11110000;
@@ -379,19 +444,45 @@ bool CPU_8080::tick() {
         else
             opCMP(_getSrc(*opcode));
     } else {
-        switch (*opcode) {
-            case 0xC6: opADI(opcode[1]); break;
-            case 0xCE: opACI(opcode[1]); break;
-            case 0xD6: opSUI(opcode[1]); break;
-            case 0xDE: opSBI(opcode[1]); break;
-            case 0xE6: opANI(opcode[1]); break;
-            case 0xEE: opXRI(opcode[1]); break;
-            case 0xF6: opORI(opcode[1]); break;
-            case 0xFE: opCPI(opcode[1]); break;
+        if (nibble1 == 2 || nibble1 == 0xA) {
+            opJcondition(_getCond(*opcode), opcode[1], opcode[2]);
+            return true;
+        } else if (nibble1 == 0xD) {
+            opCALL(opcode[1], opcode[2]);
+            return true;
+        } else if (nibble1 == 4 || nibble1 == 0xC) {
+            opCcondition(_getCond(*opcode), opcode[1], opcode[2]);
+            return true;
+        } else if (nibble1 == 0 || nibble1 == 8) {
+            opRcondition(_getCond(*opcode));
+            return true;
+        } else if (nibble1 == 7 || nibble1 == 0xF) {
+            opRST((*opcode & 0b00111000) >> 3);
+        } else {
+            switch (*opcode) {
+                case 0xC6: opADI(opcode[1]); break;
+                case 0xCE: opACI(opcode[1]); break;
+                case 0xD6: opSUI(opcode[1]); break;
+                case 0xDE: opSBI(opcode[1]); break;
+                case 0xE6: opANI(opcode[1]); break;
+                case 0xEE: opXRI(opcode[1]); break;
+                case 0xF6: opORI(opcode[1]); break;
+                case 0xFE: opCPI(opcode[1]); break;
 
-            case 0xEB: opXCHG(); break;
+                case 0xEB: opXCHG(); break;
 
-            default: goto not_implemented;
+                case 0xC3:
+                case 0xCB:
+                    opJMP(opcode[1], opcode[2]); return true;
+                
+                case 0xC9:
+                case 0xD9:
+                    opRET(); return true;
+                
+                case 0xE9: opPCHL(); break;
+
+                default: goto not_implemented;
+            }
         }
     }
 

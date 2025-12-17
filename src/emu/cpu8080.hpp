@@ -47,6 +47,9 @@ struct Registers8080 {
             case SP:
                 sp = (static_cast<uint16_t>(dh) << 8) | dl;
                 break;
+            case PC:
+                pc = (static_cast<uint16_t>(dh) << 8) | dl;
+                break;
         }
     }
 
@@ -70,7 +73,19 @@ enum RegisterPairId8080 {
     BC,
     DE,
     HL,
-    SP
+    SP,
+    PC
+};
+
+enum ConditionId8080 {
+    NZ,
+    Z,
+    NC,
+    C,
+    PO,
+    PE,
+    P,
+    M
 };
 
 class CPU_8080 {
@@ -83,17 +98,22 @@ private:
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
+    bool _evalCond(ConditionId8080 ccc);
 
     static inline SrcDestId8080 _getSrc(uint8_t op) {
         return static_cast<SrcDestId8080>(op & 0b00000111);
     }
 
     static inline SrcDestId8080 _getDest(uint8_t op) {
-        return static_cast<SrcDestId8080>(op & 0b00111000);
+        return static_cast<SrcDestId8080>((op & 0b00111000) >> 3);
     }
 
     static inline RegisterPairId8080 _getRp(uint8_t op) {
-        return static_cast<RegisterPairId8080>(op & 0b00110000);
+        return static_cast<RegisterPairId8080>((op & 0b00110000) >> 4);
+    }
+
+    static inline ConditionId8080 _getCond(uint8_t op) {
+        return static_cast<ConditionId8080>((op & 0b00111000) >> 3);
     }
 
     // Data Transfer Group:
@@ -138,6 +158,17 @@ private:
     void opSTC();
     void opDAD(RegisterPairId8080 rp);
     void opDAA();
+
+    // Branch Group:
+    void opJMP(uint8_t al, uint8_t ah);
+    void opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+    void opCALL(uint8_t al, uint8_t ah);
+    void opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+    void opRET();
+    void opRcondition(ConditionId8080 ccc);
+    void opRST(uint8_t nnn);
+    void opPCHL();
+
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
