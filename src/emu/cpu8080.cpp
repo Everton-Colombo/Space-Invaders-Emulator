@@ -365,6 +365,14 @@ void CPU_8080::opDI(){
     interruptsEnabled = false;
 }
 
+void CPU_8080::opIN(uint8_t port) {
+    registers.pc += 1;
+}
+
+void CPU_8080::opOUT(uint8_t port) {
+    registers.pc += 1;
+}
+
 
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
@@ -428,7 +436,8 @@ bool CPU_8080::tick() {
             default: goto not_implemented;
         }
     } else if (nibble0 >= 4 && nibble0 <= 7) {
-        if (nibble1 == 6) { /* HLT */ }
+        if (nibble1 == 6)
+            return false; // HLT
         else
             opMOV(_getDest(*opcode), _getSrc(*opcode));
     } else if (nibble0 == 8) {
@@ -487,8 +496,11 @@ bool CPU_8080::tick() {
                 case 0xD9:
                     opRET(); return true;
                 
-                case 0xE9: opPCHL(); break;
+                case 0xD3: opOUT(opcode[1]); break;
+                case 0xDB: opIN(opcode[1]); break;
 
+                case 0xE9: opPCHL(); break;
+                
                 case 0xF3: opDI(); break;
                 case 0xFB: opEI(); break;
 

@@ -172,6 +172,8 @@ private:
     // Stack, I/O, and Machine Control Group: 
     void opEI();
     void opDI();
+    void opIN(uint8_t port);
+    void opOUT(uint8_t port);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
