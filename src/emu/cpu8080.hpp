@@ -164,6 +164,8 @@ private:
     void opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
     void opCALL(uint8_t al, uint8_t ah);
     void opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
+    void opRET();
+    void opRcondition(ConditionId8080 ccc);
 
 
 public:
