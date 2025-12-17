@@ -341,6 +341,21 @@ void CPU_8080::opRcondition(ConditionId8080 ccc) {
         opRET();
 }
 
+void CPU_8080::opRST(uint8_t nnn) {
+    uint8_t pch = (registers.pc & 0xff00) >> 8;
+    uint8_t pcl =  registers.pc & 0x00ff;
+
+    memory[registers.sp - 1] = pch;
+    memory[registers.sp - 2] = pcl;
+    registers.sp -= 2;
+
+    registers.pc = 8 * nnn;
+}
+
+void CPU_8080::opPCHL() {
+    registers.setPair(PC, registers.l, registers.h);
+}
+
 
 
 bool CPU_8080::tick() {
@@ -441,6 +456,8 @@ bool CPU_8080::tick() {
         } else if (nibble1 == 0 || nibble1 == 8) {
             opRcondition(_getCond(*opcode));
             return true;
+        } else if (nibble1 == 7 || nibble1 == 0xF) {
+            opRST((*opcode & 0b00111000) >> 3);
         } else {
             switch (*opcode) {
                 case 0xC6: opADI(opcode[1]); break;
@@ -461,6 +478,8 @@ bool CPU_8080::tick() {
                 case 0xC9:
                 case 0xD9:
                     opRET(); return true;
+                
+                case 0xE9: opPCHL(); break;
 
                 default: goto not_implemented;
             }

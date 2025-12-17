@@ -105,15 +105,15 @@ private:
     }
 
     static inline SrcDestId8080 _getDest(uint8_t op) {
-        return static_cast<SrcDestId8080>(op & 0b00111000);
+        return static_cast<SrcDestId8080>((op & 0b00111000) >> 3);
     }
 
     static inline RegisterPairId8080 _getRp(uint8_t op) {
-        return static_cast<RegisterPairId8080>(op & 0b00110000);
+        return static_cast<RegisterPairId8080>((op & 0b00110000) >> 4);
     }
 
     static inline ConditionId8080 _getCond(uint8_t op) {
-        return static_cast<ConditionId8080>(op & 0b00111000);
+        return static_cast<ConditionId8080>((op & 0b00111000) >> 3);
     }
 
     // Data Transfer Group:
@@ -166,6 +166,8 @@ private:
     void opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah);
     void opRET();
     void opRcondition(ConditionId8080 ccc);
+    void opRST(uint8_t nnn);
+    void opPCHL();
 
 
 public:
