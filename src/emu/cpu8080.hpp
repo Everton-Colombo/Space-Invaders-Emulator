@@ -30,6 +30,14 @@ struct Registers8080 {
         }
     }
 
+    std::pair<uint8_t*, uint8_t*> getPairAddr(RegisterPairId8080 rp) {
+        switch (rp) {
+            case BC: return std::make_pair(&b, &c);
+            case DE: return std::make_pair(&d, &e);
+            case HL: return std::make_pair(&h, &l);
+        }
+    }
+
     void setPair(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
         switch (rp) {
             case BC:
@@ -174,6 +182,8 @@ private:
     void opDI();
     void opIN(uint8_t port);
     void opOUT(uint8_t port);
+    void opPUSH(RegisterPairId8080 rp);
+    void opPOP(RegisterPairId8080 rp);
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

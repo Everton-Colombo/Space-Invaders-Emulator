@@ -366,11 +366,29 @@ void CPU_8080::opDI(){
 }
 
 void CPU_8080::opIN(uint8_t port) {
+    // Unimplemented
+
     registers.pc += 1;
 }
 
 void CPU_8080::opOUT(uint8_t port) {
+    // Unimplemented
+
     registers.pc += 1;
+}
+
+void CPU_8080::opPUSH(RegisterPairId8080 rp) {
+    std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
+    memory[registers.sp - 1] = *pairAddr.first;
+    memory[registers.sp - 2] = *pairAddr.second;
+    registers.sp -= 2;
+}
+
+void CPU_8080::opPOP(RegisterPairId8080 rp) {
+    std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
+    *pairAddr.second = memory[registers.sp];
+    *pairAddr.first = memory[registers.sp + 1];
+    registers.sp += 2;
 }
 
 
@@ -503,6 +521,16 @@ bool CPU_8080::tick() {
                 
                 case 0xF3: opDI(); break;
                 case 0xFB: opEI(); break;
+
+                case 0xC1:
+                case 0xD1:
+                case 0xE1:
+                    opPOP(_getRp(*opcode)); break;
+
+                case 0xC5:
+                case 0xD5:
+                case 0xE5:
+                    opPUSH(_getRp(*opcode)); break;
 
                 default: goto not_implemented;
             }
