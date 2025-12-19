@@ -184,6 +184,8 @@ private:
     void opOUT(uint8_t port);
     void opPUSH(RegisterPairId8080 rp);
     void opPOP(RegisterPairId8080 rp);
+    void opPUSHpsw();
+    void opPOPpsw();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {

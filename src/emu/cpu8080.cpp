@@ -391,6 +391,27 @@ void CPU_8080::opPOP(RegisterPairId8080 rp) {
     registers.sp += 2;
 }
 
+void CPU_8080::opPUSHpsw() {
+    uint8_t conditionFlagsWord = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
+    memory[registers.sp - 1] = registers.a;
+    memory[registers.sp - 2] = conditionFlagsWord;
+
+    registers.sp -= 2;
+}
+
+void CPU_8080::opPOPpsw() {
+    uint8_t conditionFlagsWord = memory[registers.sp];
+    conditionFlags.s = conditionFlagsWord & 0b10000000;
+    conditionFlags.z = conditionFlagsWord & 0b01000000;
+    conditionFlags.ac = conditionFlagsWord & 0b00010000;
+    conditionFlags.p = conditionFlagsWord & 0b00000100;
+    conditionFlags.cy = conditionFlagsWord & 0b00000001;
+
+    registers.a = memory[registers.sp + 1];
+
+    registers.sp += 2;
+}
+
 
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
@@ -526,11 +547,13 @@ bool CPU_8080::tick() {
                 case 0xD1:
                 case 0xE1:
                     opPOP(_getRp(*opcode)); break;
+                case 0xF1: opPOPpsw(); break;
 
                 case 0xC5:
                 case 0xD5:
                 case 0xE5:
                     opPUSH(_getRp(*opcode)); break;
+                case 0xF5: opPUSHpsw(); break;
 
                 default: goto not_implemented;
             }
