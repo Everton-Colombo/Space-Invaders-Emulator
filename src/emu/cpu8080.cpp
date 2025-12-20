@@ -412,6 +412,14 @@ void CPU_8080::opPOPpsw() {
     registers.sp += 2;
 }
 
+void CPU_8080::opXTHL() {
+    registers.setPair(HL, memory[registers.sp], memory[registers.sp + 1]);
+}
+
+void CPU_8080::opSPHL() {
+    registers.setPair(SP, registers.getPair(HL));
+}
+
 
 bool CPU_8080::tick() {
     uint8_t* opcode = &this->memory[this->registers.pc];
@@ -554,6 +562,9 @@ bool CPU_8080::tick() {
                 case 0xE5:
                     opPUSH(_getRp(*opcode)); break;
                 case 0xF5: opPUSHpsw(); break;
+
+                case 0xE3: opXTHL(); break;
+                case 0xF9: opSPHL(); break;
 
                 default: goto not_implemented;
             }

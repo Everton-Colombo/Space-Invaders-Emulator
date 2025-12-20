@@ -186,6 +186,8 @@ private:
     void opPOP(RegisterPairId8080 rp);
     void opPUSHpsw();
     void opPOPpsw();
+    void opXTHL();
+    void opSPHL();
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress) {
