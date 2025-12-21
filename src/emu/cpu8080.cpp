@@ -356,6 +356,70 @@ void CPU_8080::opPCHL() {
     registers.setPair(PC, registers.l, registers.h);
 }
 
+// Stack, I/O, and Machine Control Group: 
+void CPU_8080::opEI(){
+    interruptsEnabled = true;
+}
+
+void CPU_8080::opDI(){
+    interruptsEnabled = false;
+}
+
+void CPU_8080::opIN(uint8_t port) {
+    // Unimplemented
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opOUT(uint8_t port) {
+    // Unimplemented
+
+    registers.pc += 1;
+}
+
+void CPU_8080::opPUSH(RegisterPairId8080 rp) {
+    std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
+    memory[registers.sp - 1] = *pairAddr.first;
+    memory[registers.sp - 2] = *pairAddr.second;
+    registers.sp -= 2;
+}
+
+void CPU_8080::opPOP(RegisterPairId8080 rp) {
+    std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
+    *pairAddr.second = memory[registers.sp];
+    *pairAddr.first = memory[registers.sp + 1];
+    registers.sp += 2;
+}
+
+void CPU_8080::opPUSHpsw() {
+    uint8_t conditionFlagsWord = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
+    memory[registers.sp - 1] = registers.a;
+    memory[registers.sp - 2] = conditionFlagsWord;
+
+    registers.sp -= 2;
+}
+
+void CPU_8080::opPOPpsw() {
+    uint8_t conditionFlagsWord = memory[registers.sp];
+    conditionFlags.s = conditionFlagsWord & 0b10000000;
+    conditionFlags.z = conditionFlagsWord & 0b01000000;
+    conditionFlags.ac = conditionFlagsWord & 0b00010000;
+    conditionFlags.p = conditionFlagsWord & 0b00000100;
+    conditionFlags.cy = conditionFlagsWord & 0b00000001;
+
+    registers.a = memory[registers.sp + 1];
+
+    registers.sp += 2;
+}
+
+void CPU_8080::opXTHL() {
+    std::swap(*_getAddr(L), memory[registers.sp]);
+    std::swap(*_getAddr(H), memory[registers.sp + 1]);
+}
+
+void CPU_8080::opSPHL() {
+    registers.setPair(SP, registers.getPair(HL));
+}
 
 
 bool CPU_8080::tick() {
@@ -366,63 +430,60 @@ bool CPU_8080::tick() {
     if (nibble0 <= 3) {
         if (nibble1 == 1) 
             opLXI(_getRp(*opcode), opcode[1], opcode[2]);
-
-        if (nibble1 == 3)
+        else if (nibble1 == 3)
             opINX(_getRp(*opcode));
-        if (nibble1 == 0xB)
+        else if (nibble1 == 0xB)
             opDCX(_getRp(*opcode));
-
-        if (nibble1 == 4 || nibble1 == 0xC)
+        else if (nibble1 == 4 || nibble1 == 0xC)
             opINR(_getDest(*opcode));
-        
-        if (nibble1 == 5 || nibble1 == 0xD)
+        else if (nibble1 == 5 || nibble1 == 0xD)
             opDCR(_getDest(*opcode));
-        
-        if (nibble1 == 6 || nibble1 == 0xE)
+        else if (nibble1 == 6 || nibble1 == 0xE)
             opMVI(_getDest(*opcode), opcode[1]);
-        
-        if (nibble1 == 9)
+        else if (nibble1 == 9)
             opDAD(_getRp(*opcode));
-        
-        switch (*opcode) {
-            case 0x00:
-            case 0x10:
-            case 0x20:
-            case 0x30:
-            case 0x08:
-            case 0x18:
-            case 0x28:
-            case 0x38:
-                break; // NOP
-            
-            case 0x07: opRLC(); break;
-            case 0x17: opRAL(); break;
-            case 0x0F: opRRC(); break;
-            case 0x1F: opRAR(); break;
+        else {
+            switch (*opcode) {
+                case 0x00:
+                case 0x10:
+                case 0x20:
+                case 0x30:
+                case 0x08:
+                case 0x18:
+                case 0x28:
+                case 0x38:
+                    break; // NOP
+                
+                case 0x07: opRLC(); break;
+                case 0x17: opRAL(); break;
+                case 0x0F: opRRC(); break;
+                case 0x1F: opRAR(); break;
 
-            case 0x27: opDAA(); break;
-            case 0x37: opSTC(); break;
-            case 0x2F: opCMA(); break;
-            case 0x3F: opCMC(); break;
-            
-            case 0x22: opSHLD(opcode[1], opcode[2]); break; 
-            case 0x32: opSTA(opcode[1], opcode[2]);  break;
-            case 0x2A: opLHLD(opcode[1], opcode[2]); break;
-            case 0x3A: opLDA(opcode[1], opcode[2]);  break;
+                case 0x27: opDAA(); break;
+                case 0x37: opSTC(); break;
+                case 0x2F: opCMA(); break;
+                case 0x3F: opCMC(); break;
+                
+                case 0x22: opSHLD(opcode[1], opcode[2]); break; 
+                case 0x32: opSTA(opcode[1], opcode[2]);  break;
+                case 0x2A: opLHLD(opcode[1], opcode[2]); break;
+                case 0x3A: opLDA(opcode[1], opcode[2]);  break;
 
-            case 0x02:
-            case 0x12:
-                opSTAX(_getRp(*opcode)); break;
-            case 0x0A:
-            case 0x1A:
-                opLDAX(_getRp(*opcode)); break;
+                case 0x02:
+                case 0x12:
+                    opSTAX(_getRp(*opcode)); break;
+                case 0x0A:
+                case 0x1A:
+                    opLDAX(_getRp(*opcode)); break;
 
-            default: goto not_implemented;
+                default: goto not_implemented;
+            }
         }
     } else if (nibble0 >= 4 && nibble0 <= 7) {
-        if (nibble1 == 6) { /* HLT */ }
-        else
+        if (*opcode != 0x76)
             opMOV(_getDest(*opcode), _getSrc(*opcode));
+        else
+            return false; // HLT
     } else if (nibble0 == 8) {
         if (nibble1 <= 7)
             opADD(_getSrc(*opcode));
@@ -479,7 +540,28 @@ bool CPU_8080::tick() {
                 case 0xD9:
                     opRET(); return true;
                 
+                case 0xD3: opOUT(opcode[1]); break;
+                case 0xDB: opIN(opcode[1]); break;
+
                 case 0xE9: opPCHL(); break;
+                
+                case 0xF3: opDI(); break;
+                case 0xFB: opEI(); break;
+
+                case 0xC1:
+                case 0xD1:
+                case 0xE1:
+                    opPOP(_getRp(*opcode)); break;
+                case 0xF1: opPOPpsw(); break;
+
+                case 0xC5:
+                case 0xD5:
+                case 0xE5:
+                    opPUSH(_getRp(*opcode)); break;
+                case 0xF5: opPUSHpsw(); break;
+
+                case 0xE3: opXTHL(); break;
+                case 0xF9: opSPHL(); break;
 
                 default: goto not_implemented;
             }
