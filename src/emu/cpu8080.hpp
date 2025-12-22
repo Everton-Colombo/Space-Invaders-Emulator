@@ -10,6 +10,14 @@ struct ConditionFlags8080 {
     uint8_t _pad : 3;
 };
 
+enum class RegisterPairId8080 {
+    BC,
+    DE,
+    HL,
+    SP,
+    PC
+};
+
 struct Registers8080 {
     uint8_t a;
     uint8_t b;
@@ -23,39 +31,39 @@ struct Registers8080 {
 
     uint16_t getPair(RegisterPairId8080 rp) const {
         switch (rp) {
-            case BC: return (static_cast<uint16_t>(b) << 8) | c;
-            case DE: return (static_cast<uint16_t>(d) << 8) | e;
-            case HL: return (static_cast<uint16_t>(h) << 8) | l;
-            case SP: return sp;
+            case RegisterPairId8080::BC: return (static_cast<uint16_t>(b) << 8) | c;
+            case RegisterPairId8080::DE: return (static_cast<uint16_t>(d) << 8) | e;
+            case RegisterPairId8080::HL: return (static_cast<uint16_t>(h) << 8) | l;
+            case RegisterPairId8080::SP: return sp;
         }
     }
 
     std::pair<uint8_t*, uint8_t*> getPairAddr(RegisterPairId8080 rp) {
         switch (rp) {
-            case BC: return std::make_pair(&b, &c);
-            case DE: return std::make_pair(&d, &e);
-            case HL: return std::make_pair(&h, &l);
+            case RegisterPairId8080::BC: return std::make_pair(&b, &c);
+            case RegisterPairId8080::DE: return std::make_pair(&d, &e);
+            case RegisterPairId8080::HL: return std::make_pair(&h, &l);
         }
     }
 
     void setPair(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
         switch (rp) {
-            case BC:
+            case RegisterPairId8080::BC:
                 b = dh;
                 c = dl;
                 break;
-            case DE:
+            case RegisterPairId8080::DE:
                 d = dh;
                 e = dl;
                 break;
-            case HL: 
+            case RegisterPairId8080::HL: 
                 h = dh;
                 l = dl;
                 break;
-            case SP:
+            case RegisterPairId8080::SP:
                 sp = (static_cast<uint16_t>(dh) << 8) | dl;
                 break;
-            case PC:
+            case RegisterPairId8080::PC:
                 pc = (static_cast<uint16_t>(dh) << 8) | dl;
                 break;
         }
@@ -66,7 +74,7 @@ struct Registers8080 {
     }
 };
 
-enum SrcDestId8080 {
+enum class SrcDestId8080 {
     A = 0b111,
     B = 0b000,
     C,
@@ -77,15 +85,7 @@ enum SrcDestId8080 {
     M
 };
 
-enum RegisterPairId8080 {
-    BC,
-    DE,
-    HL,
-    SP,
-    PC
-};
-
-enum ConditionId8080 {
+enum class ConditionId8080 {
     NZ,
     Z,
     NC,

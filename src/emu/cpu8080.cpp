@@ -272,9 +272,9 @@ void CPU_8080::opSTC() {
 }
 
 void CPU_8080::opDAD(RegisterPairId8080 rp) {
-    uint32_t result = static_cast<uint32_t>(registers.getPair(HL)) + static_cast<uint32_t>(registers.getPair(rp));
+    uint32_t result = static_cast<uint32_t>(registers.getPair(RegisterPairId8080::HL)) + static_cast<uint32_t>(registers.getPair(rp));
     conditionFlags.cy = result > 0xffff;
-    registers.setPair(HL, static_cast<uint16_t>(result));
+    registers.setPair(RegisterPairId8080::HL, static_cast<uint16_t>(result));
 }
 
 void CPU_8080::opDAA() {
@@ -296,24 +296,24 @@ void CPU_8080::opDAA() {
 // Branch Group:
 bool CPU_8080::_evalCond(ConditionId8080 ccc) {
     switch (ccc) {
-        case NZ: return !conditionFlags.z;
-        case  Z: return  conditionFlags.z;
-        case NC: return !conditionFlags.cy;
-        case  C: return  conditionFlags.cy;
-        case PO: return !conditionFlags.p;
-        case PE: return  conditionFlags.p;
-        case  P: return !conditionFlags.s;
-        case  M: return  conditionFlags.s;  
+        case ConditionId8080::NZ: return !conditionFlags.z;
+        case ConditionId8080::Z:  return  conditionFlags.z;
+        case ConditionId8080::NC: return !conditionFlags.cy;
+        case ConditionId8080::C:  return  conditionFlags.cy;
+        case ConditionId8080::PO: return !conditionFlags.p;
+        case ConditionId8080::PE: return  conditionFlags.p;
+        case ConditionId8080::P:  return !conditionFlags.s;
+        case ConditionId8080::M:  return  conditionFlags.s;  
     }
 }
 
 void CPU_8080::opJMP(uint8_t al, uint8_t ah) {
-    registers.setPair(PC, al, ah);
+    registers.setPair(RegisterPairId8080::PC, al, ah);
 }
 
 void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
     if (_evalCond(ccc))
-        registers.setPair(PC, al, ah);
+        registers.setPair(RegisterPairId8080::PC, al, ah);
     else
         registers.pc += 3;
 }
@@ -325,7 +325,7 @@ void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
     memory[registers.sp - 1] = pch;
     memory[registers.sp - 2] = pcl;
     registers.sp -= 2;
-    registers.setPair(PC, al, ah);
+    registers.setPair(RegisterPairId8080::PC, al, ah);
 }
 
 void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
@@ -336,7 +336,7 @@ void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 }
 
 void CPU_8080::opRET() {
-    registers.setPair(PC, memory[registers.sp], memory[registers.sp + 1]);
+    registers.setPair(RegisterPairId8080::PC, memory[registers.sp], memory[registers.sp + 1]);
 }
 
 void CPU_8080::opRcondition(ConditionId8080 ccc) {
@@ -358,7 +358,7 @@ void CPU_8080::opRST(uint8_t nnn) {
 }
 
 void CPU_8080::opPCHL() {
-    registers.setPair(PC, registers.l, registers.h);
+    registers.setPair(RegisterPairId8080::PC, registers.l, registers.h);
 }
 
 // Stack, I/O, and Machine Control Group: 
@@ -418,12 +418,12 @@ void CPU_8080::opPOPpsw() {
 }
 
 void CPU_8080::opXTHL() {
-    std::swap(*_getAddr(L), memory[registers.sp]);
-    std::swap(*_getAddr(H), memory[registers.sp + 1]);
+    std::swap(*_getAddr(SrcDestId8080::L), memory[registers.sp]);
+    std::swap(*_getAddr(SrcDestId8080::L), memory[registers.sp + 1]);
 }
 
 void CPU_8080::opSPHL() {
-    registers.setPair(SP, registers.getPair(HL));
+    registers.setPair(RegisterPairId8080::SP, registers.getPair(RegisterPairId8080::HL));
 }
 
 
