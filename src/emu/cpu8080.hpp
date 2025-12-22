@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <stdexcept>
 
 struct ConditionFlags8080 {
     bool z  : 1;
@@ -35,6 +36,8 @@ struct Registers8080 {
             case RegisterPairId8080::DE: return (static_cast<uint16_t>(d) << 8) | e;
             case RegisterPairId8080::HL: return (static_cast<uint16_t>(h) << 8) | l;
             case RegisterPairId8080::SP: return sp;
+
+            default: throw std::invalid_argument("Unsupported rp for getPair(): " + std::to_string(static_cast<int>(rp)));
         }
     }
 
@@ -43,6 +46,8 @@ struct Registers8080 {
             case RegisterPairId8080::BC: return std::make_pair(&b, &c);
             case RegisterPairId8080::DE: return std::make_pair(&d, &e);
             case RegisterPairId8080::HL: return std::make_pair(&h, &l);
+
+            default: throw std::invalid_argument("Unsupported rp for getPairAddr(): " + std::to_string(static_cast<int>(rp)));
         }
     }
 

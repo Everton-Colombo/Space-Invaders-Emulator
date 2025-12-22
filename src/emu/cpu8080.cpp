@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdio>
 #include <utility>
+#include <stdexcept>
 
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
@@ -14,11 +15,12 @@ uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
         case SrcDestId8080::L: return &registers.l;
 
         case SrcDestId8080::M: return &memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
+
+        default: throw std::invalid_argument("Unknown src/dest id (sss/ddd).");
     }
 } 
 
 // Data Transfer Group:
-
 void CPU_8080::opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
     registers.setPair(rp, dl, dh);
     registers.pc += 2;
@@ -303,7 +305,9 @@ bool CPU_8080::_evalCond(ConditionId8080 ccc) {
         case ConditionId8080::PO: return !conditionFlags.p;
         case ConditionId8080::PE: return  conditionFlags.p;
         case ConditionId8080::P:  return !conditionFlags.s;
-        case ConditionId8080::M:  return  conditionFlags.s;  
+        case ConditionId8080::M:  return  conditionFlags.s;
+        
+        default: throw std::invalid_argument("Unknown condition (ccc).");
     }
 }
 
