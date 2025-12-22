@@ -103,11 +103,11 @@ enum class ConditionId8080 {
 
 class CPU_8080 {
 private:
-    ConditionFlags8080 conditionFlags;
-    Registers8080 registers;
+    ConditionFlags8080 conditionFlags = {};
+    Registers8080 registers = {};
 
     uint8_t* memory;
-    bool interruptsEnabled;
+    bool interruptsEnabled = true;
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);

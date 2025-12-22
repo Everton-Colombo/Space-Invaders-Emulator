@@ -21,6 +21,7 @@ file(GLOB EMU_CPP_SOURCES "src/emu/*.cpp")
 file(GLOB EMU_CPP_HEADERS "src/emu/*.hpp")
 add_executable(siemu ${EMU_CPP_SOURCES} ${EMU_CPP_HEADERS})
 target_link_libraries(siemu PUBLIC disassemble8080)
+target_include_directories(siemu PRIVATE src/disassembler)
 set_target_properties(siemu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

@@ -4,6 +4,10 @@
 #include <utility>
 #include <stdexcept>
 
+extern "C" {
+#include "8080_disassembler.h"
+}
+
 uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
     switch (id) {
         case SrcDestId8080::A: return &registers.a;
@@ -341,6 +345,7 @@ void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 
 void CPU_8080::opRET() {
     registers.setPair(RegisterPairId8080::PC, memory[registers.sp], memory[registers.sp + 1]);
+    registers.pc += 1;
 }
 
 void CPU_8080::opRcondition(ConditionId8080 ccc) {
@@ -432,7 +437,8 @@ void CPU_8080::opSPHL() {
 
 
 bool CPU_8080::tick() {
-    uint8_t* opcode = &this->memory[this->registers.pc];
+    uint8_t* opcode = &memory[registers.pc];
+    disassemble_next_8080(memory, registers.pc);
     uint8_t nibble0 = ((*opcode) & 0b11110000) >> 4;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 
