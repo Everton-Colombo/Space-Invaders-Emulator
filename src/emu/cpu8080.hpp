@@ -109,6 +109,10 @@ private:
     uint8_t* memory;
     bool interruptsEnabled = true;
 
+    bool _debug = false;
+
+    void _printState();
+
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
     bool _evalCond(ConditionId8080 ccc);
@@ -195,7 +199,7 @@ private:
     void opSPHL();
 
 public:
-    CPU_8080(uint8_t* memoryBaseAddress) {
+    CPU_8080(uint8_t* memoryBaseAddress, bool debug=false) : _debug(debug) {
         this->memory = memoryBaseAddress;
     }
 

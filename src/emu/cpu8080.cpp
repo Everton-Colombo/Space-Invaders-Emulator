@@ -435,10 +435,32 @@ void CPU_8080::opSPHL() {
     registers.setPair(RegisterPairId8080::SP, registers.getPair(RegisterPairId8080::HL));
 }
 
+void CPU_8080::_printState() {
+    uint8_t flags = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
+    uint16_t af = (registers.a << 8) | flags;
+    uint16_t bc = registers.getPair(RegisterPairId8080::BC);
+    uint16_t de = registers.getPair(RegisterPairId8080::DE);
+    uint16_t hl = registers.getPair(RegisterPairId8080::HL);
+
+    printf("af   bc   de   hl   pc   sp   flags\n");
+    printf("%04x %04x %04x %04x %04x %04x ", af, bc, de, hl, registers.pc, registers.sp);
+    
+    printf("%c%c%c%c%c\n", 
+        conditionFlags.z ? 'z' : '.',
+        conditionFlags.s ? 's' : '.',
+        conditionFlags.p ? 'p' : '.',
+        conditionFlags.cy ? 'c' : '.',
+        conditionFlags.ac ? 'a' : '.'
+    );
+}
 
 bool CPU_8080::tick() {
     uint8_t* opcode = &memory[registers.pc];
-    disassemble_next_8080(memory, registers.pc);
+    if (_debug) {
+        _printState();
+        disassemble_next_8080(memory, registers.pc);
+        std::cin.get();
+    }
     uint8_t nibble0 = ((*opcode) & 0b11110000) >> 4;
     uint8_t nibble1 = (*opcode) & 0b00001111;
 

@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 
     std::vector<uint8_t> rom = loadROM(argv[1]);
 
-    CPU_8080 cpu8080(rom.data());
+    CPU_8080 cpu8080(rom.data(), true);
 
     while (cpu8080.tick());
 

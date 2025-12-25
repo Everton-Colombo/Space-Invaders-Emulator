@@ -1,4 +1,5 @@
 #include "8080_disassembler.h"
+#include <stdio.h>
 
 int disassemble_next_8080(uint8_t* rom, unsigned int pc) {
     uint8_t* op = &rom[pc];
