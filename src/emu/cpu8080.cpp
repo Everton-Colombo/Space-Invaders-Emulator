@@ -85,7 +85,7 @@ bool determineParity(uint8_t n) {
         n &= (n - 1);
         count++;
     }
-    return count % 2;
+    return (count % 2) == 0;
 }
 
 void CPU_8080::_setArithmeticConditionFlags(uint16_t operationResult) {
