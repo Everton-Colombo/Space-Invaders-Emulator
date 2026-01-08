@@ -345,6 +345,7 @@ void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 
 void CPU_8080::opRET() {
     registers.setPair(RegisterPairId8080::PC, memory[registers.sp], memory[registers.sp + 1]);
+    registers.sp += 2;
     registers.pc += 1;
 }
 
@@ -436,7 +437,8 @@ void CPU_8080::opSPHL() {
 }
 
 void CPU_8080::_printState() {
-    uint8_t flags = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
+    // uint8_t flags = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
+    uint8_t flags = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (conditionFlags.cy); // TODO: go back to previous
     uint16_t af = (registers.a << 8) | flags;
     uint16_t bc = registers.getPair(RegisterPairId8080::BC);
     uint16_t de = registers.getPair(RegisterPairId8080::DE);
