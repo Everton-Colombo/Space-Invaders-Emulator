@@ -111,8 +111,6 @@ private:
 
     bool _debug = false;
 
-    void _printState();
-
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
     bool _evalCond(ConditionId8080 ccc);
@@ -204,5 +202,6 @@ public:
     }
 
     bool tick();
+    void _printState();
 
 };

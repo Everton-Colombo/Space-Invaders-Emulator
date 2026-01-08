@@ -457,9 +457,7 @@ void CPU_8080::_printState() {
 bool CPU_8080::tick() {
     uint8_t* opcode = &memory[registers.pc];
     if (_debug) {
-        _printState();
         disassemble_next_8080(memory, registers.pc);
-        std::cin.get();
     }
     uint8_t nibble0 = ((*opcode) & 0b11110000) >> 4;
     uint8_t nibble1 = (*opcode) & 0b00001111;
@@ -607,6 +605,7 @@ bool CPU_8080::tick() {
     }
 
     registers.pc++;
+
     return true;
 
     not_implemented: {
