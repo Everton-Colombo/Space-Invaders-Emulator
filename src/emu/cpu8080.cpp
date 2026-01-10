@@ -430,7 +430,7 @@ void CPU_8080::opPOPpsw() {
 
 void CPU_8080::opXTHL() {
     std::swap(*_getAddr(SrcDestId8080::L), memory[registers.sp]);
-    std::swap(*_getAddr(SrcDestId8080::L), memory[registers.sp + 1]);
+    std::swap(*_getAddr(SrcDestId8080::H), memory[registers.sp + 1]);
 }
 
 void CPU_8080::opSPHL() {
