@@ -385,13 +385,17 @@ void CPU_8080::opDI(){
 }
 
 void CPU_8080::opIN(uint8_t port) {
-    // Unimplemented
+    if (_opIN_handler) {
+        registers.a = _opIN_handler(port);
+    }
 
     registers.pc += 1;
 }
 
 void CPU_8080::opOUT(uint8_t port) {
-    // Unimplemented
+    if (_opOUT_handler) {
+        _opOUT_handler(port, registers.a);
+    }
 
     registers.pc += 1;
 }

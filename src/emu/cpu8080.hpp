@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <stdexcept>
+#include <functional>
 
 struct ConditionFlags8080 {
     bool z  : 1;
@@ -187,7 +188,9 @@ private:
     // Stack, I/O, and Machine Control Group: 
     void opEI();
     void opDI();
+    std::function<uint8_t(uint8_t port)> _opIN_handler;
     void opIN(uint8_t port);
+    std::function<void(uint8_t port, uint8_t value)> _opOUT_handler;
     void opOUT(uint8_t port);
     void opPUSH(RegisterPairId8080 rp);
     void opPOP(RegisterPairId8080 rp);
@@ -198,6 +201,11 @@ private:
 
 public:
     CPU_8080(uint8_t* memoryBaseAddress, bool debug=false) : _debug(debug) {
+        this->memory = memoryBaseAddress;
+    }
+
+    CPU_8080(uint8_t* memoryBaseAddress, std::function<uint8_t(uint8_t)> opIN_handler,
+        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false) : _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {
         this->memory = memoryBaseAddress;
     }
 
