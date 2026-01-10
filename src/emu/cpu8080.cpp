@@ -92,6 +92,7 @@ void CPU_8080::_setArithmeticConditionFlags(uint16_t operationResult) {
     conditionFlags.z = ((operationResult & 0xff) == 0);
     conditionFlags.s = ((operationResult & 0x80) != 0);
     conditionFlags.cy = (operationResult > 0xff);
+    // conditionFlags.ac = (operationResult & 0xf) TODO: implement ac
     conditionFlags.p = determineParity(operationResult);
 }
 
@@ -284,6 +285,8 @@ void CPU_8080::opDAD(RegisterPairId8080 rp) {
 }
 
 void CPU_8080::opDAA() {
+    // TODO: fix this impl after implementing ac flag
+
     if ((registers.a & 0x0f) > 9 || conditionFlags.ac) {
         registers.a += 6;
         conditionFlags.ac = 1;
