@@ -327,6 +327,7 @@ void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 }
 
 void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
+    registers.pc += 2;
     uint8_t pch = (registers.pc & 0xff00) >> 8;
     uint8_t pcl =  registers.pc & 0x00ff;
 
@@ -346,7 +347,6 @@ void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 void CPU_8080::opRET() {
     registers.setPair(RegisterPairId8080::PC, memory[registers.sp], memory[registers.sp + 1]);
     registers.sp += 2;
-    registers.pc += 1;
 }
 
 void CPU_8080::opRcondition(ConditionId8080 ccc) {
@@ -357,6 +357,7 @@ void CPU_8080::opRcondition(ConditionId8080 ccc) {
 }
 
 void CPU_8080::opRST(uint8_t nnn) {
+    registers.pc += 1;
     uint8_t pch = (registers.pc & 0xff00) >> 8;
     uint8_t pcl =  registers.pc & 0x00ff;
 
@@ -576,7 +577,7 @@ bool CPU_8080::tick() {
                 
                 case 0xC9:
                 case 0xD9:
-                    opRET(); return true;
+                    opRET(); break;
                 
                 case 0xD3: opOUT(opcode[1]); break;
                 case 0xDB: opIN(opcode[1]); break;
