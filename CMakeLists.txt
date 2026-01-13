@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.25)
 project(space-invaders LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -6,6 +6,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE # Only download the commit we need, not the whole history
+    GIT_PROGRESS TRUE # Show progress bar so you know it's not frozen
+)
+FetchContent_MakeAvailable(raylib)
 
 # Disassembler targets:
 add_library(disassemble8080 src/disassembler/8080_disassembler.c src/disassembler/8080_disassembler.h)
@@ -29,7 +40,8 @@ file(GLOB EMU_CPP_SOURCES "src/emu/*.cpp")
 list(FILTER EMU_CPP_SOURCES EXCLUDE REGEX "src/emu/cpu8080_debugger.cpp$")
 file(GLOB EMU_CPP_HEADERS "src/emu/*.hpp")
 add_executable(siemu ${EMU_CPP_SOURCES} ${EMU_CPP_HEADERS})
-target_link_libraries(siemu PUBLIC disassemble8080)
+target_link_libraries(siemu PRIVATE disassemble8080)
+target_link_libraries(siemu PRIVATE raylib)
 target_include_directories(siemu PRIVATE src/disassembler)
 set_target_properties(siemu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
