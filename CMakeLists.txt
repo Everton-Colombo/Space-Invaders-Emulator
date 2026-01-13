@@ -16,8 +16,17 @@ set_target_properties(8080_disassembler PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+# CPU 8080 debugger target:
+add_executable(cpu8080_debugger src/emu/cpu8080.cpp src/emu/cpu8080.hpp src/emu/cpu8080_debugger.cpp)
+target_link_libraries(cpu8080_debugger PUBLIC disassemble8080)
+target_include_directories(cpu8080_debugger PRIVATE src/disassembler)
+set_target_properties(cpu8080_debugger PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
 # Emulator target:
 file(GLOB EMU_CPP_SOURCES "src/emu/*.cpp")
+list(FILTER EMU_CPP_SOURCES EXCLUDE REGEX "src/emu/cpu8080_debugger.cpp$")
 file(GLOB EMU_CPP_HEADERS "src/emu/*.hpp")
 add_executable(siemu ${EMU_CPP_SOURCES} ${EMU_CPP_HEADERS})
 target_link_libraries(siemu PUBLIC disassemble8080)
