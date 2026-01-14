@@ -623,3 +623,13 @@ bool CPU_8080::tick() {
         return false;
     }
 }
+
+void CPU_8080::generateInterrupt(uint8_t ist) {
+    if (!interruptsEnabled)
+        return;
+    
+    interruptsEnabled = false;
+
+    registers.pc -= 1; // To counter the pc incrementation in opRST
+    opRST(ist);
+}

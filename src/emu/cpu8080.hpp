@@ -210,6 +210,7 @@ public:
     }
 
     bool tick();
+    void generateInterrupt(uint8_t ist);
     void _printState();
 
 };
