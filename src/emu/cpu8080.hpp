@@ -102,12 +102,17 @@ enum class ConditionId8080 {
     M
 };
 
+class BUS_8080 {
+public:
+    virtual uint8_t& operator[](size_t index) = 0;
+};
+
 class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags = {};
     Registers8080 registers = {};
+    BUS_8080* bus;
 
-    uint8_t* memory;
     bool interruptsEnabled = true;
 
     bool _debug = false;
@@ -200,14 +205,10 @@ private:
     void opSPHL();
 
 public:
-    CPU_8080(uint8_t* memoryBaseAddress, bool debug=false) : _debug(debug) {
-        this->memory = memoryBaseAddress;
-    }
+    CPU_8080(BUS_8080* bus, bool debug=false) : bus(bus), _debug(debug) {}
 
-    CPU_8080(uint8_t* memoryBaseAddress, std::function<uint8_t(uint8_t)> opIN_handler,
-        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false) : _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {
-        this->memory = memoryBaseAddress;
-    }
+    CPU_8080(BUS_8080* bus, std::function<uint8_t(uint8_t)> opIN_handler,
+        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false): bus(bus), _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {}
 
     bool tick();
     void generateInterrupt(uint8_t ist);

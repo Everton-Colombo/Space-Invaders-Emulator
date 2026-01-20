@@ -18,7 +18,7 @@ uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
         case SrcDestId8080::H: return &registers.h;
         case SrcDestId8080::L: return &registers.l;
 
-        case SrcDestId8080::M: return &memory[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
+        case SrcDestId8080::M: return &(*bus)[(static_cast<uint16_t>(registers.h) << 8) | registers.l];
 
         default: throw std::invalid_argument("Unknown src/dest id (sss/ddd).");
     }
@@ -40,37 +40,37 @@ void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
 }
 
 void CPU_8080::opLDA(uint8_t al, uint8_t ah) {
-    registers.a = memory[(static_cast<uint16_t>(ah) << 8) | al];
+    registers.a = (*bus)[(static_cast<uint16_t>(ah) << 8) | al];
     registers.pc += 2;
 }
 
 void CPU_8080::opSTA(uint8_t al, uint8_t ah) {
-    memory[(static_cast<uint16_t>(ah) << 8) | al] = registers.a;
+    (*bus)[(static_cast<uint16_t>(ah) << 8) | al] = registers.a;
     registers.pc += 2;
 }
 
 void CPU_8080::opLHLD(uint8_t al, uint8_t ah) {
     uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
-    registers.l = memory[addr];
-    registers.h = memory[addr + 1];
+    registers.l = (*bus)[addr];
+    registers.h = (*bus)[addr + 1];
 
     registers.pc += 2;
 }
 
 void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
     uint16_t addr = (static_cast<uint16_t>(ah) << 8) | al;
-    memory[addr] = registers.l;
-    memory[addr + 1] = registers.h;
+    (*bus)[addr] = registers.l;
+    (*bus)[addr + 1] = registers.h;
 
     registers.pc += 2;
 }
 
 void CPU_8080::opLDAX(RegisterPairId8080 rp) {
-    registers.a = memory[registers.getPair(rp)];
+    registers.a = (*bus)[registers.getPair(rp)];
 }
 
 void CPU_8080::opSTAX(RegisterPairId8080 rp) {
-    memory[registers.getPair(rp)] = registers.a;
+    (*bus)[registers.getPair(rp)] = registers.a;
 }
 
 void CPU_8080::opXCHG() {
@@ -334,8 +334,8 @@ void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
     uint8_t pch = (registers.pc & 0xff00) >> 8;
     uint8_t pcl =  registers.pc & 0x00ff;
 
-    memory[registers.sp - 1] = pch;
-    memory[registers.sp - 2] = pcl;
+    (*bus)[registers.sp - 1] = pch;
+    (*bus)[registers.sp - 2] = pcl;
     registers.sp -= 2;
     registers.setPair(RegisterPairId8080::PC, al, ah);
 }
@@ -348,7 +348,7 @@ void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 }
 
 void CPU_8080::opRET() {
-    registers.setPair(RegisterPairId8080::PC, memory[registers.sp], memory[registers.sp + 1]);
+    registers.setPair(RegisterPairId8080::PC, (*bus)[registers.sp], (*bus)[registers.sp + 1]);
     registers.sp += 2;
 }
 
@@ -364,8 +364,8 @@ void CPU_8080::opRST(uint8_t nnn) {
     uint8_t pch = (registers.pc & 0xff00) >> 8;
     uint8_t pcl =  registers.pc & 0x00ff;
 
-    memory[registers.sp - 1] = pch;
-    memory[registers.sp - 2] = pcl;
+    (*bus)[registers.sp - 1] = pch;
+    (*bus)[registers.sp - 2] = pcl;
     registers.sp -= 2;
 
     registers.pc = 8 * nnn;
@@ -402,42 +402,42 @@ void CPU_8080::opOUT(uint8_t port) {
 
 void CPU_8080::opPUSH(RegisterPairId8080 rp) {
     std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
-    memory[registers.sp - 1] = *pairAddr.first;
-    memory[registers.sp - 2] = *pairAddr.second;
+    (*bus)[registers.sp - 1] = *pairAddr.first;
+    (*bus)[registers.sp - 2] = *pairAddr.second;
     registers.sp -= 2;
 }
 
 void CPU_8080::opPOP(RegisterPairId8080 rp) {
     std::pair<uint8_t*, uint8_t*> pairAddr = registers.getPairAddr(rp);
-    *pairAddr.second = memory[registers.sp];
-    *pairAddr.first = memory[registers.sp + 1];
+    *pairAddr.second = (*bus)[registers.sp];
+    *pairAddr.first = (*bus)[registers.sp + 1];
     registers.sp += 2;
 }
 
 void CPU_8080::opPUSHpsw() {
     uint8_t conditionFlagsWord = (conditionFlags.s << 7) | (conditionFlags.z << 6) | (conditionFlags.ac << 4) | (conditionFlags.p << 2) | (1 << 1) | (conditionFlags.cy);
-    memory[registers.sp - 1] = registers.a;
-    memory[registers.sp - 2] = conditionFlagsWord;
+    (*bus)[registers.sp - 1] = registers.a;
+    (*bus)[registers.sp - 2] = conditionFlagsWord;
 
     registers.sp -= 2;
 }
 
 void CPU_8080::opPOPpsw() {
-    uint8_t conditionFlagsWord = memory[registers.sp];
+    uint8_t conditionFlagsWord = (*bus)[registers.sp];
     conditionFlags.s = conditionFlagsWord & 0b10000000;
     conditionFlags.z = conditionFlagsWord & 0b01000000;
     conditionFlags.ac = conditionFlagsWord & 0b00010000;
     conditionFlags.p = conditionFlagsWord & 0b00000100;
     conditionFlags.cy = conditionFlagsWord & 0b00000001;
 
-    registers.a = memory[registers.sp + 1];
+    registers.a = (*bus)[registers.sp + 1];
 
     registers.sp += 2;
 }
 
 void CPU_8080::opXTHL() {
-    std::swap(*_getAddr(SrcDestId8080::L), memory[registers.sp]);
-    std::swap(*_getAddr(SrcDestId8080::H), memory[registers.sp + 1]);
+    std::swap(*_getAddr(SrcDestId8080::L), (*bus)[registers.sp]);
+    std::swap(*_getAddr(SrcDestId8080::H), (*bus)[registers.sp + 1]);
 }
 
 void CPU_8080::opSPHL() {
@@ -465,9 +465,9 @@ void CPU_8080::_printState() {
 }
 
 bool CPU_8080::tick() {
-    uint8_t* opcode = &memory[registers.pc];
+    uint8_t* opcode = &(*bus)[registers.pc];
     if (_debug) {
-        disassemble_next_8080(memory, registers.pc);
+        disassemble_next_8080(&(*bus)[0], registers.pc);
     }
     uint8_t nibble0 = ((*opcode) & 0b11110000) >> 4;
     uint8_t nibble1 = (*opcode) & 0b00001111;
