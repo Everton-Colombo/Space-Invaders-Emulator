@@ -72,10 +72,16 @@ private:
     SpaceInvadersShiftRegister shiftRegister;
     SpaceInvadersControllerInput controllerInput;
 
+    void tick(); // 60 Hz
+
 public:
     SpaceInvadersMachine(uint8_t* rom) 
         : bus(rom, workRam, videoRam),
           cpu(&bus,
               [this](uint8_t port) { return cpuIoInHandler(port); },
               [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); }) {}
+
+    SpaceInvadersControllerInput& getControllerInput() {
+        return controllerInput;
+    }
 };
