@@ -1,5 +1,7 @@
 #include "space_invaders.hpp"
 
+#define CYCLES_PER_HALF_FRAME 16666
+
 // Shift Register:
 uint8_t SpaceInvadersShiftRegister::getResult() {
     uint16_t v = (shift1<<8) | shift0;    
@@ -58,4 +60,12 @@ void SpaceInvadersMachine::cpuIoOutHandler(uint8_t port, uint8_t value) {
             shiftRegister.fill(value);
             break;
     }
+}
+
+void SpaceInvadersMachine::tick() {
+    cpu.executeCycles(CYCLES_PER_HALF_FRAME);
+    cpu.triggerInterrupt(1);
+
+    cpu.executeCycles(CYCLES_PER_HALF_FRAME);
+    cpu.triggerInterrupt(2);
 }

@@ -102,7 +102,7 @@ enum class ConditionId8080 {
     M
 };
 
-class BUS_8080 {
+class IIndexable {
 public:
     virtual uint8_t& operator[](size_t index) = 0;
 };
@@ -111,11 +111,13 @@ class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags = {};
     Registers8080 registers = {};
-    BUS_8080* bus;
+    IIndexable* bus;
 
     bool interruptsEnabled = true;
 
     bool _debug = false;
+
+    uint64_t _cycleCount = 0;
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
@@ -205,13 +207,14 @@ private:
     void opSPHL();
 
 public:
-    CPU_8080(BUS_8080* bus, bool debug=false) : bus(bus), _debug(debug) {}
+    CPU_8080(IIndexable* bus, bool debug=false) : bus(bus), _debug(debug) {}
 
-    CPU_8080(BUS_8080* bus, std::function<uint8_t(uint8_t)> opIN_handler,
+    CPU_8080(IIndexable* bus, std::function<uint8_t(uint8_t)> opIN_handler,
         std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false): bus(bus), _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {}
 
-    bool tick();
-    void generateInterrupt(uint8_t ist);
+    bool executeNext();
+    void executeCycles(uint cycles = 0);
+    void triggerInterrupt(uint8_t ist);
     void _printState();
 
 };

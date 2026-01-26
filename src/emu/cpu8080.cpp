@@ -28,25 +28,30 @@ uint8_t* CPU_8080::_getAddr(SrcDestId8080 id) {
 void CPU_8080::opLXI(RegisterPairId8080 rp, uint8_t dl, uint8_t dh) {
     registers.setPair(rp, dl, dh);
     registers.pc += 2;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opMOV(SrcDestId8080 dest, SrcDestId8080 src) {
     *_getAddr(dest) = *_getAddr(src);
+    _cycleCount += (dest == SrcDestId8080::M || src == SrcDestId8080::M) ? 7 : 5;
 }
 
 void CPU_8080::opMVI(SrcDestId8080 dest, uint8_t data) {
     *_getAddr(dest) = data;
     registers.pc++;
+    _cycleCount += (dest == SrcDestId8080::M) ? 10 : 7;
 }
 
 void CPU_8080::opLDA(uint8_t al, uint8_t ah) {
     registers.a = (*bus)[(static_cast<uint16_t>(ah) << 8) | al];
     registers.pc += 2;
+    _cycleCount += 13;
 }
 
 void CPU_8080::opSTA(uint8_t al, uint8_t ah) {
     (*bus)[(static_cast<uint16_t>(ah) << 8) | al] = registers.a;
     registers.pc += 2;
+    _cycleCount += 13;
 }
 
 void CPU_8080::opLHLD(uint8_t al, uint8_t ah) {
@@ -55,6 +60,7 @@ void CPU_8080::opLHLD(uint8_t al, uint8_t ah) {
     registers.h = (*bus)[addr + 1];
 
     registers.pc += 2;
+    _cycleCount += 16;
 }
 
 void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
@@ -63,19 +69,23 @@ void CPU_8080::opSHLD(uint8_t al, uint8_t ah) {
     (*bus)[addr + 1] = registers.h;
 
     registers.pc += 2;
+    _cycleCount += 16;
 }
 
 void CPU_8080::opLDAX(RegisterPairId8080 rp) {
     registers.a = (*bus)[registers.getPair(rp)];
+    _cycleCount += 7;
 }
 
 void CPU_8080::opSTAX(RegisterPairId8080 rp) {
     (*bus)[registers.getPair(rp)] = registers.a;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opXCHG() {
     std::swap(registers.h, registers.d);
     std::swap(registers.l, registers.e);
+    _cycleCount += 4;
 }
 
 // Arithemetic Group:
@@ -101,6 +111,7 @@ void CPU_8080::opADD(SrcDestId8080 src) {
     registers.a = result & 0xff;
 
     _setArithmeticConditionFlags(result);
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opADI(uint8_t data) {
@@ -110,6 +121,7 @@ void CPU_8080::opADI(uint8_t data) {
     _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opADC(SrcDestId8080 src) {
@@ -117,6 +129,7 @@ void CPU_8080::opADC(SrcDestId8080 src) {
     registers.a = result & 0xff;
 
     _setArithmeticConditionFlags(result);
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opACI(uint8_t data) {
@@ -126,6 +139,7 @@ void CPU_8080::opACI(uint8_t data) {
     _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opSUB(SrcDestId8080 src) {
@@ -133,6 +147,7 @@ void CPU_8080::opSUB(SrcDestId8080 src) {
     registers.a = result & 0xff;
 
     _setArithmeticConditionFlags(result);
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opSUI(uint8_t data) {
@@ -142,6 +157,7 @@ void CPU_8080::opSUI(uint8_t data) {
     _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opSBB(SrcDestId8080 src) {
@@ -149,6 +165,7 @@ void CPU_8080::opSBB(SrcDestId8080 src) {
     registers.a = result & 0xff;
 
     _setArithmeticConditionFlags(result);
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opSBI(uint8_t data) {
@@ -158,12 +175,14 @@ void CPU_8080::opSBI(uint8_t data) {
     _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opANA(SrcDestId8080 src) {
     registers.a = registers.a & *_getAddr(src);
     _setArithmeticConditionFlags(registers.a);
     conditionFlags.cy = 0; // CY flag is cleared
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opANI(uint8_t data) {
@@ -172,6 +191,7 @@ void CPU_8080::opANI(uint8_t data) {
     conditionFlags.cy = 0; // CY flag is cleared
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opORA(SrcDestId8080 src) {
@@ -179,6 +199,7 @@ void CPU_8080::opORA(SrcDestId8080 src) {
     _setArithmeticConditionFlags(registers.a);
     conditionFlags.cy = 0; // CY flag is cleared
     conditionFlags.ac = 0; // AC flag is cleared
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opORI(uint8_t data) {
@@ -188,6 +209,7 @@ void CPU_8080::opORI(uint8_t data) {
     conditionFlags.ac = 0; // AC flag is cleared
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opXRA(SrcDestId8080 src) {
@@ -195,6 +217,7 @@ void CPU_8080::opXRA(SrcDestId8080 src) {
     _setArithmeticConditionFlags(registers.a);
     conditionFlags.cy = 0; // CY flag is cleared
     conditionFlags.ac = 0; // AC flag is cleared
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opXRI(uint8_t data) {
@@ -204,11 +227,13 @@ void CPU_8080::opXRI(uint8_t data) {
     conditionFlags.ac = 0; // AC flag is cleared
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opCMP(SrcDestId8080 src) {
     uint16_t result = static_cast<uint16_t>(registers.a) - *_getAddr(src);
     _setArithmeticConditionFlags(result);
+    _cycleCount += (src == SrcDestId8080::M) ? 7 : 4;
 }
 
 void CPU_8080::opCPI(uint8_t data) {
@@ -216,14 +241,17 @@ void CPU_8080::opCPI(uint8_t data) {
     _setArithmeticConditionFlags(result);
 
     registers.pc += 1;
+    _cycleCount += 7;
 }
 
 void CPU_8080::opINX(RegisterPairId8080 rp) {
     registers.setPair(rp, registers.getPair(rp) + 1);
+    _cycleCount += 5;
 }
 
 void CPU_8080::opDCX(RegisterPairId8080 rp) {
     registers.setPair(rp, registers.getPair(rp) - 1);
+    _cycleCount += 5;
 }
 
 void CPU_8080::opINR(SrcDestId8080 dest) {
@@ -232,6 +260,7 @@ void CPU_8080::opINR(SrcDestId8080 dest) {
     bool prevCy = conditionFlags.cy;
     _setArithmeticConditionFlags(result);
     conditionFlags.cy = prevCy; // CY isn't affected
+    _cycleCount += (dest == SrcDestId8080::M) ? 10 : 5;
 }
 
 void CPU_8080::opDCR(SrcDestId8080 dest) {
@@ -240,48 +269,57 @@ void CPU_8080::opDCR(SrcDestId8080 dest) {
     bool prevCy = conditionFlags.cy;
     _setArithmeticConditionFlags(result);
     conditionFlags.cy = prevCy; // CY isn't affected
+    _cycleCount += (dest == SrcDestId8080::M) ? 10 : 5;
 }
 
 void CPU_8080::opRLC() {
     uint8_t a7Bit = registers.a >> 7;
     registers.a = (registers.a << 1) + a7Bit;
     conditionFlags.cy = a7Bit;  
+    _cycleCount += 4;
 }
 
 void CPU_8080::opRRC() {
     uint8_t a0Bit = registers.a & 0b1;
     registers.a = (registers.a >> 1) + (a0Bit << 7);
     conditionFlags.cy = a0Bit;  
+    _cycleCount += 4;
 }
 
 void CPU_8080::opRAL() {
     uint8_t a7Bit = registers.a >> 7;
     registers.a = (registers.a << 1) + conditionFlags.cy;
     conditionFlags.cy = a7Bit; 
+    _cycleCount += 4;
 }
 
 void CPU_8080::opRAR() {
     uint8_t a0Bit = registers.a & 0b1;
     registers.a = (registers.a >> 1) + (conditionFlags.cy << 7);
     conditionFlags.cy = a0Bit; 
+    _cycleCount += 4;
 }
 
 void CPU_8080::opCMA() {
     registers.a = ~registers.a;
+    _cycleCount += 4;
 }
 
 void CPU_8080::opCMC() {
     conditionFlags.cy = ~conditionFlags.cy;
+    _cycleCount += 4;
 }
 
 void CPU_8080::opSTC() {
     conditionFlags.cy = 1;
+    _cycleCount += 4;
 }
 
 void CPU_8080::opDAD(RegisterPairId8080 rp) {
     uint32_t result = static_cast<uint32_t>(registers.getPair(RegisterPairId8080::HL)) + static_cast<uint32_t>(registers.getPair(rp));
     conditionFlags.cy = result > 0xffff;
     registers.setPair(RegisterPairId8080::HL, static_cast<uint16_t>(result));
+    _cycleCount += 10;
 }
 
 void CPU_8080::opDAA() {
@@ -300,6 +338,7 @@ void CPU_8080::opDAA() {
     conditionFlags.z = registers.a == 0;
     conditionFlags.s = ((registers.a & 0x80) != 0);
     conditionFlags.p = determineParity(registers.a);
+    _cycleCount += 4;
 }
 
 // Branch Group:
@@ -320,6 +359,7 @@ bool CPU_8080::_evalCond(ConditionId8080 ccc) {
 
 void CPU_8080::opJMP(uint8_t al, uint8_t ah) {
     registers.setPair(RegisterPairId8080::PC, al, ah);
+    _cycleCount += 10;
 }
 
 void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
@@ -327,6 +367,7 @@ void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
         registers.setPair(RegisterPairId8080::PC, al, ah);
     else
         registers.pc += 3;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
@@ -338,25 +379,32 @@ void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
     (*bus)[registers.sp - 2] = pcl;
     registers.sp -= 2;
     registers.setPair(RegisterPairId8080::PC, al, ah);
+    _cycleCount += 17;
 }
 
 void CPU_8080::opCcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
     if (_evalCond(ccc))
         opCALL(al, ah);
-    else
+    else {
         registers.pc += 3;
+        _cycleCount += 11;
+    }
 }
 
 void CPU_8080::opRET() {
     registers.setPair(RegisterPairId8080::PC, (*bus)[registers.sp], (*bus)[registers.sp + 1]);
     registers.sp += 2;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opRcondition(ConditionId8080 ccc) {
-    if (_evalCond(ccc))
+    if (_evalCond(ccc)) {
+        _cycleCount += 1; // 11 cycles total (10 from RET)
         opRET();
-    else
+    } else {
         registers.pc += 1;
+        _cycleCount += 5;
+    }
 }
 
 void CPU_8080::opRST(uint8_t nnn) {
@@ -369,19 +417,23 @@ void CPU_8080::opRST(uint8_t nnn) {
     registers.sp -= 2;
 
     registers.pc = 8 * nnn;
+    _cycleCount += 11;
 }
 
 void CPU_8080::opPCHL() {
     registers.setPair(RegisterPairId8080::PC, registers.l, registers.h);
+    _cycleCount += 5;
 }
 
 // Stack, I/O, and Machine Control Group: 
 void CPU_8080::opEI(){
     interruptsEnabled = true;
+    _cycleCount += 4;
 }
 
 void CPU_8080::opDI(){
     interruptsEnabled = false;
+    _cycleCount += 4;
 }
 
 void CPU_8080::opIN(uint8_t port) {
@@ -390,6 +442,7 @@ void CPU_8080::opIN(uint8_t port) {
     }
 
     registers.pc += 1;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opOUT(uint8_t port) {
@@ -398,6 +451,7 @@ void CPU_8080::opOUT(uint8_t port) {
     }
 
     registers.pc += 1;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opPUSH(RegisterPairId8080 rp) {
@@ -405,6 +459,7 @@ void CPU_8080::opPUSH(RegisterPairId8080 rp) {
     (*bus)[registers.sp - 1] = *pairAddr.first;
     (*bus)[registers.sp - 2] = *pairAddr.second;
     registers.sp -= 2;
+    _cycleCount += 11;
 }
 
 void CPU_8080::opPOP(RegisterPairId8080 rp) {
@@ -412,6 +467,7 @@ void CPU_8080::opPOP(RegisterPairId8080 rp) {
     *pairAddr.second = (*bus)[registers.sp];
     *pairAddr.first = (*bus)[registers.sp + 1];
     registers.sp += 2;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opPUSHpsw() {
@@ -420,6 +476,7 @@ void CPU_8080::opPUSHpsw() {
     (*bus)[registers.sp - 2] = conditionFlagsWord;
 
     registers.sp -= 2;
+    _cycleCount += 11;
 }
 
 void CPU_8080::opPOPpsw() {
@@ -433,15 +490,18 @@ void CPU_8080::opPOPpsw() {
     registers.a = (*bus)[registers.sp + 1];
 
     registers.sp += 2;
+    _cycleCount += 10;
 }
 
 void CPU_8080::opXTHL() {
     std::swap(*_getAddr(SrcDestId8080::L), (*bus)[registers.sp]);
     std::swap(*_getAddr(SrcDestId8080::H), (*bus)[registers.sp + 1]);
+    _cycleCount += 18;
 }
 
 void CPU_8080::opSPHL() {
     registers.setPair(RegisterPairId8080::SP, registers.getPair(RegisterPairId8080::HL));
+    _cycleCount += 5;
 }
 
 void CPU_8080::_printState() {
@@ -464,7 +524,7 @@ void CPU_8080::_printState() {
     );
 }
 
-bool CPU_8080::tick() {
+bool CPU_8080::executeNext() {
     uint8_t* opcode = &(*bus)[registers.pc];
     if (_debug) {
         disassemble_next_8080(&(*bus)[0], registers.pc);
@@ -497,6 +557,7 @@ bool CPU_8080::tick() {
                 case 0x18:
                 case 0x28:
                 case 0x38:
+                    _cycleCount += 4;
                     break; // NOP
                 
                 case 0x07: opRLC(); break;
@@ -527,8 +588,10 @@ bool CPU_8080::tick() {
     } else if (nibble0 >= 4 && nibble0 <= 7) {
         if (*opcode != 0x76)
             opMOV(_getDest(*opcode), _getSrc(*opcode));
-        else
+        else {
+            _cycleCount += 7;
             return false; // HLT
+        }
     } else if (nibble0 == 8) {
         if (nibble1 <= 7)
             opADD(_getSrc(*opcode));
@@ -624,7 +687,14 @@ bool CPU_8080::tick() {
     }
 }
 
-void CPU_8080::generateInterrupt(uint8_t ist) {
+void CPU_8080::executeCycles(uint cycles) {
+    uint64_t prevCycles = _cycleCount;
+    while (_cycleCount - prevCycles <= cycles) {
+        executeNext();
+    }
+}
+
+void CPU_8080::triggerInterrupt(uint8_t ist) {
     if (!interruptsEnabled)
         return;
     

@@ -2,6 +2,8 @@
 #include <array>
 #include "cpu8080.hpp"
 
+#define SPACE_INVADERS_SCREEN_WIDTH  224
+#define SPACE_INVADERS_SCREEN_HEIGHT 256
 
 class SpaceInvadersShiftRegister {
 private:
@@ -38,7 +40,7 @@ public:
     std::pair<uint8_t, uint8_t> getControllerInputPortsData();
 };
 
-class SpaceInvadersBus : public BUS_8080 {
+class SpaceInvadersBus : public IIndexable {
 private:
     uint8_t* rom;
     uint8_t* workRam;
@@ -72,8 +74,6 @@ private:
     SpaceInvadersShiftRegister shiftRegister;
     SpaceInvadersControllerInput controllerInput;
 
-    void tick(); // 60 Hz
-
 public:
     SpaceInvadersMachine(uint8_t* rom) 
         : bus(rom, workRam, videoRam),
@@ -81,7 +81,13 @@ public:
               [this](uint8_t port) { return cpuIoInHandler(port); },
               [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); }) {}
 
+    void tick(); // 60 Hz
+
     SpaceInvadersControllerInput& getControllerInput() {
         return controllerInput;
+    }
+
+    const uint8_t* getVideoRam() const {
+        return videoRam;
     }
 };

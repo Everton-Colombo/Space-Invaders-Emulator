@@ -2,6 +2,9 @@
 #include "space_invaders.hpp"
 #include "utils.hpp"
 
+Color pixelBuffer[SPACE_INVADERS_SCREEN_WIDTH * SPACE_INVADERS_SCREEN_HEIGHT];
+Texture2D arcadeScreenTexture;
+
 void updateInput(SpaceInvadersControllerInput& controllerInput) {
     controllerInput.setInputState(COIN, IsKeyDown(KEY_C));
     controllerInput.setInputState(P1_START, IsKeyDown(KEY_ENTER));
@@ -14,6 +17,29 @@ void updateInput(SpaceInvadersControllerInput& controllerInput) {
     controllerInput.setInputState(P2_RIGHT, IsKeyDown(KEY_RIGHT));
 }
 
+void initScreen() {
+    Image img = GenImageColor(SPACE_INVADERS_SCREEN_WIDTH, SPACE_INVADERS_SCREEN_HEIGHT, BLACK);
+    arcadeScreenTexture = LoadTextureFromImage(img);
+    UnloadImage(img);
+}
+
+void renderVram(const uint8_t* videoRam) {
+    for (int x = 0; x < SPACE_INVADERS_SCREEN_WIDTH; x++) {
+        for (int y = 0; y < SPACE_INVADERS_SCREEN_HEIGHT; y++) {
+            int byteIdx = (x * 32) + ((255 - y) / 8);
+            int bitIdx = (255 - y) % 8;
+           
+            uint8_t byte = videoRam[byteIdx];
+            bool isPixelOn = (byte >> bitIdx) & 1;
+            int bufferIdx = (y * SPACE_INVADERS_SCREEN_WIDTH) + x;
+
+            pixelBuffer[bufferIdx] = isPixelOn ? WHITE : BLACK;
+        }
+    }
+
+    UpdateTexture(arcadeScreenTexture, pixelBuffer);
+}
+
 int main(int argc, char* argv[])
 {
     const int screenWidth = 800;
@@ -22,18 +48,14 @@ int main(int argc, char* argv[])
     InitWindow(screenWidth, screenHeight, "Space Invaders Emulator");
     SetTargetFPS(60);
 
-    Image arcadeScreen = GenImageColor(256, 224, BLACK);
-    // ImageDrawPixel(&image, x, y, WHITE);
-    Texture2D arcadeScreenTexture = LoadTextureFromImage(arcadeScreen);
-
     SpaceInvadersMachine machine = SpaceInvadersMachine(loadROM(argv[1]).data());
+    initScreen();
 
     while (!WindowShouldClose())
     {
         updateInput(machine.getControllerInput());
-
-        UnloadTexture(arcadeScreenTexture);
-        arcadeScreenTexture = LoadTextureFromImage(arcadeScreen);
+        renderVram(machine.getVideoRam());
+        machine.tick();
 
         BeginDrawing();
 
@@ -44,7 +66,7 @@ int main(int argc, char* argv[])
         EndDrawing();
     }
 
-    UnloadImage(arcadeScreen);
+    UnloadTexture(arcadeScreenTexture);
 
     CloseWindow();
 

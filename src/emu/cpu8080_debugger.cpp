@@ -5,6 +5,7 @@
 #include <sstream>
 #include "utils.hpp"
 #include "cpu8080.hpp"
+#include "space_invaders.hpp"
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -13,8 +14,8 @@ int main(int argc, char** argv) {
     }
 
     std::vector<uint8_t> rom = loadROM(argv[1]);
-
-    CPU_8080 cpu8080(rom.data(), true);
+    SpaceInvadersBus bus = SpaceInvadersBus(rom.data(), new uint8_t[1024], new uint8_t[7096]);
+    CPU_8080 cpu8080(&bus, true);
 
     uint64_t cycleCount = 0;
     uint32_t step = 1;
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
             }
         }
         cycleCount++;
-    } while (cpu8080.tick());
+    } while (cpu8080.executeNext());
 
     return 0;
 }
