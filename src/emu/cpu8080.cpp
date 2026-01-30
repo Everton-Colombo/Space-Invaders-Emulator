@@ -371,7 +371,7 @@ void CPU_8080::opJcondition(ConditionId8080 ccc, uint8_t al, uint8_t ah) {
 }
 
 void CPU_8080::opCALL(uint8_t al, uint8_t ah) {
-    registers.pc += 2;
+    registers.pc += 3;
     uint8_t pch = (registers.pc & 0xff00) >> 8;
     uint8_t pcl =  registers.pc & 0x00ff;
 
@@ -647,7 +647,7 @@ bool CPU_8080::executeNext() {
                 
                 case 0xC9:
                 case 0xD9:
-                    opRET(); break;
+                    opRET(); return true;
                 
                 case 0xD3: opOUT(opcode[1]); break;
                 case 0xDB: opIN(opcode[1]); break;

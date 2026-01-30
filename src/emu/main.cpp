@@ -42,20 +42,19 @@ void renderVram(const uint8_t* videoRam) {
 
 int main(int argc, char* argv[])
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
+    SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data());
 
-    InitWindow(screenWidth, screenHeight, "Space Invaders Emulator");
+    InitWindow(800, 450, "Space Invaders Emulator");
     SetTargetFPS(60);
 
-    SpaceInvadersMachine machine = SpaceInvadersMachine(loadROM(argv[1]).data());
     initScreen();
 
     while (!WindowShouldClose())
     {
         updateInput(machine.getControllerInput());
-        renderVram(machine.getVideoRam());
         machine.tick();
+        renderVram(machine.getVideoRam());
 
         BeginDrawing();
 

@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include <fstream>
 
-std::vector<uint8_t> loadROM(char* filePath) {
+std::vector<uint8_t> loadROM(const char* filePath) {
     std::ifstream fs(filePath, std::ios::binary | std::ios::ate);
     size_t size = fs.tellg();
 

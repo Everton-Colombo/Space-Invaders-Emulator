@@ -207,10 +207,14 @@ private:
     void opSPHL();
 
 public:
-    CPU_8080(IIndexable* bus, bool debug=false) : bus(bus), _debug(debug) {}
+    CPU_8080(IIndexable* bus, bool debug=false) : bus(bus), _debug(debug) {
+        registers.sp = 0x2400;
+    }
 
     CPU_8080(IIndexable* bus, std::function<uint8_t(uint8_t)> opIN_handler,
-        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false): bus(bus), _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {}
+        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false): bus(bus), _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {
+            registers.sp = 0x2400;
+        }
 
     bool executeNext();
     void executeCycles(uint cycles = 0);

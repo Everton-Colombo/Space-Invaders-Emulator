@@ -45,6 +45,7 @@ private:
     uint8_t* rom;
     uint8_t* workRam;
     uint8_t* videoRam;
+    uint8_t oob = 0;
 
 public:
     SpaceInvadersBus(uint8_t* rom, uint8_t* workRam, uint8_t* videoRam) : rom(rom), workRam(workRam), videoRam(videoRam) {};
@@ -54,8 +55,10 @@ public:
             return rom[index];
         } else if (index <= 0x23FF) {
             return workRam[index - 0x2000];
+        } else if (index < 0x4000){
+            return videoRam[index - 0x2400];
         } else {
-            return videoRam[index - 0x2000 - 0x2400];
+            return oob;
         }
     };
 };
@@ -79,7 +82,8 @@ public:
         : bus(rom, workRam, videoRam),
           cpu(&bus,
               [this](uint8_t port) { return cpuIoInHandler(port); },
-              [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); }) {}
+              [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); },
+              true) {}
 
     void tick(); // 60 Hz
 
