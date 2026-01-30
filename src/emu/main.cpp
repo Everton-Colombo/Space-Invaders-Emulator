@@ -1,52 +1,73 @@
-#include <vector>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include "cpu8080.hpp"
+#include "raylib.h"
+#include "space_invaders.hpp"
+#include "utils.hpp"
 
-std::vector<uint8_t> loadROM(char* filePath) {
-    std::ifstream fs(filePath, std::ios::binary | std::ios::ate);
-    size_t size = fs.tellg();
+Color pixelBuffer[SPACE_INVADERS_SCREEN_WIDTH * SPACE_INVADERS_SCREEN_HEIGHT];
+Texture2D arcadeScreenTexture;
 
-    if (size <= 0)
-        throw std::runtime_error("Error while opening rom.");
-    
-    fs.seekg(0, std::ios::beg);
-    
-    std::vector<uint8_t> buffer(size);
-    if (fs.read((char*)buffer.data(), size))
-        return buffer;
-    
-    throw std::runtime_error("Error reading file content!");
+void updateInput(SpaceInvadersControllerInput& controllerInput) {
+    controllerInput.setInputState(COIN, IsKeyDown(KEY_C));
+    controllerInput.setInputState(P1_START, IsKeyDown(KEY_ENTER));
+    controllerInput.setInputState(P1_SHOOT, IsKeyDown(KEY_W));
+    controllerInput.setInputState(P1_LEFT, IsKeyDown(KEY_A));
+    controllerInput.setInputState(P1_RIGHT, IsKeyDown(KEY_D));
+    controllerInput.setInputState(P2_START, IsKeyDown(KEY_SPACE));
+    controllerInput.setInputState(P2_SHOOT, IsKeyDown(KEY_UP));
+    controllerInput.setInputState(P2_LEFT, IsKeyDown(KEY_LEFT));
+    controllerInput.setInputState(P2_RIGHT, IsKeyDown(KEY_RIGHT));
 }
 
-int main(int argc, char** argv) {
-    if (argc < 2) {
-        std::cout << "Usage: siemu <rom_path>" << std::endl;
-        return 1;
+void initScreen() {
+    Image img = GenImageColor(SPACE_INVADERS_SCREEN_WIDTH, SPACE_INVADERS_SCREEN_HEIGHT, BLACK);
+    arcadeScreenTexture = LoadTextureFromImage(img);
+    UnloadImage(img);
+}
+
+void renderVram(const uint8_t* videoRam) {
+    for (int x = 0; x < SPACE_INVADERS_SCREEN_WIDTH; x++) {
+        for (int y = 0; y < SPACE_INVADERS_SCREEN_HEIGHT; y++) {
+            int byteIdx = (x * 32) + ((255 - y) / 8);
+            int bitIdx = (255 - y) % 8;
+           
+            uint8_t byte = videoRam[byteIdx];
+            bool isPixelOn = (byte >> bitIdx) & 1;
+            int bufferIdx = (y * SPACE_INVADERS_SCREEN_WIDTH) + x;
+
+            pixelBuffer[bufferIdx] = isPixelOn ? WHITE : BLACK;
+        }
     }
 
-    std::vector<uint8_t> rom = loadROM(argv[1]);
+    UpdateTexture(arcadeScreenTexture, pixelBuffer);
+}
 
-    CPU_8080 cpu8080(rom.data(), true);
+int main(int argc, char* argv[])
+{
+    auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
+    SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data());
 
-    uint64_t cycleCount = 0;
-    uint32_t step = 1;
-    std::string input;
-    do {
-        cpu8080._printState();
-        std::cout << std::endl;
-        if (cycleCount % step == 0) {
-            step = 1;
-            std::getline(std::cin, input);
-            if (!input.empty()) {
-                std::istringstream stream(input);
-                stream >> step;
-            }
-        }
-        cycleCount++;
-    } while (cpu8080.tick());
+    InitWindow(800, 450, "Space Invaders Emulator");
+    SetTargetFPS(60);
+
+    initScreen();
+
+    while (!WindowShouldClose())
+    {
+        updateInput(machine.getControllerInput());
+        machine.tick();
+        renderVram(machine.getVideoRam());
+
+        BeginDrawing();
+
+            ClearBackground(RAYWHITE);
+
+            DrawTextureEx(arcadeScreenTexture, (Vector2) {0, 0}, 0, 2, WHITE);
+
+        EndDrawing();
+    }
+
+    UnloadTexture(arcadeScreenTexture);
+
+    CloseWindow();
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <stdexcept>
+#include <functional>
 
 struct ConditionFlags8080 {
     bool z  : 1;
@@ -101,15 +102,22 @@ enum class ConditionId8080 {
     M
 };
 
+class IIndexable {
+public:
+    virtual uint8_t& operator[](size_t index) = 0;
+};
+
 class CPU_8080 {
 private:
     ConditionFlags8080 conditionFlags = {};
     Registers8080 registers = {};
+    IIndexable* bus;
 
-    uint8_t* memory;
     bool interruptsEnabled = true;
 
     bool _debug = false;
+
+    uint64_t _cycleCount = 0;
 
     uint8_t* _getAddr(SrcDestId8080 id);
     void _setArithmeticConditionFlags(uint16_t operationResult);
@@ -187,7 +195,9 @@ private:
     // Stack, I/O, and Machine Control Group: 
     void opEI();
     void opDI();
+    std::function<uint8_t(uint8_t port)> _opIN_handler;
     void opIN(uint8_t port);
+    std::function<void(uint8_t port, uint8_t value)> _opOUT_handler;
     void opOUT(uint8_t port);
     void opPUSH(RegisterPairId8080 rp);
     void opPOP(RegisterPairId8080 rp);
@@ -197,11 +207,18 @@ private:
     void opSPHL();
 
 public:
-    CPU_8080(uint8_t* memoryBaseAddress, bool debug=false) : _debug(debug) {
-        this->memory = memoryBaseAddress;
+    CPU_8080(IIndexable* bus, bool debug=false) : bus(bus), _debug(debug) {
+        registers.sp = 0x2400;
     }
 
-    bool tick();
+    CPU_8080(IIndexable* bus, std::function<uint8_t(uint8_t)> opIN_handler,
+        std::function<void(uint8_t, uint8_t)> opOUT_handler, bool debug=false): bus(bus), _debug(debug), _opIN_handler(opIN_handler), _opOUT_handler(opOUT_handler) {
+            registers.sp = 0x2400;
+        }
+
+    bool executeNext();
+    void executeCycles(uint cycles = 0);
+    void triggerInterrupt(uint8_t ist);
     void _printState();
 
 };
