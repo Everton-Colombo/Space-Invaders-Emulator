@@ -33,7 +33,16 @@ void renderVram(const uint8_t* videoRam) {
             bool isPixelOn = (byte >> bitIdx) & 1;
             int bufferIdx = (y * SPACE_INVADERS_SCREEN_WIDTH) + x;
 
-            pixelBuffer[bufferIdx] = isPixelOn ? WHITE : BLACK;
+            if (isPixelOn) {
+                pixelBuffer[bufferIdx] = WHITE;
+
+                if (y >= 32 && y <= 64)
+                    pixelBuffer[bufferIdx] = RED;
+                else if (y >= 184 && (y <= 239 || (x >= 26 && x <= 136)))
+                    pixelBuffer[bufferIdx] = GREEN;
+            } else {
+                pixelBuffer[bufferIdx] = BLACK;
+            }
         }
     }
 
@@ -45,7 +54,7 @@ int main(int argc, char* argv[])
     auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
     SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data());
 
-    InitWindow(800, 450, "Space Invaders Emulator");
+    InitWindow(SPACE_INVADERS_SCREEN_WIDTH * 2, SPACE_INVADERS_SCREEN_HEIGHT * 2, "Space Invaders Emulator");
     SetTargetFPS(60);
 
     initScreen();
