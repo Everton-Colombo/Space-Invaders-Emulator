@@ -1,4 +1,4 @@
-#include "space_invaders.hpp"
+#include "space_invaders_machine.hpp"
 
 #define CYCLES_PER_HALF_FRAME 16666
 

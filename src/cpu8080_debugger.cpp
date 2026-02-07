@@ -5,7 +5,7 @@
 #include <sstream>
 #include "utils.hpp"
 #include "cpu8080.hpp"
-#include "space_invaders.hpp"
+#include "space_invaders_machine.hpp"
 
 int main(int argc, char** argv) {
     if (argc < 2) {

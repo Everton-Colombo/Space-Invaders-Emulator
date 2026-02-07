@@ -1,5 +1,5 @@
 #include "raylib.h"
-#include "space_invaders.hpp"
+#include "space_invaders_machine.hpp"
 #include "utils.hpp"
 
 Color pixelBuffer[SPACE_INVADERS_SCREEN_WIDTH * SPACE_INVADERS_SCREEN_HEIGHT];
@@ -36,9 +36,9 @@ void renderVram(const uint8_t* videoRam) {
             if (isPixelOn) {
                 pixelBuffer[bufferIdx] = WHITE;
 
-                if (y >= 32 && y <= 64)
+                if (y >= 32 && y <= 63)
                     pixelBuffer[bufferIdx] = RED;
-                else if (y >= 184 && (y <= 239 || (x >= 26 && x <= 136)))
+                else if (y >= 184 && (y <= 239 || (x >= 25 && x <= 135)))
                     pixelBuffer[bufferIdx] = GREEN;
             } else {
                 pixelBuffer[bufferIdx] = BLACK;
