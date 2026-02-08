@@ -20,8 +20,14 @@ void SpaceInvadersMachine::cpuIoOutHandler(uint8_t port, uint8_t value) {
         case 2: // shift register result offset (bits 0,1,2)
             shiftRegister.setOffset(value);
             break;
+        case 3: // audio 1
+            audioPlayer->interpretOutPort3(value);
+            break;
         case 4: // fill shift register
             shiftRegister.fill(value);
+            break;
+        case 5: // audio 2
+            audioPlayer->interpretOutPort5(value);
             break;
     }
 }

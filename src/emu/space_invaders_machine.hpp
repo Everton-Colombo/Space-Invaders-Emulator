@@ -4,6 +4,7 @@
 #include "si_shift_register.hpp"
 #include "si_controller_input.hpp"
 #include "si_display.hpp"
+#include "si_audio_player.hpp"
 
 #define SPACE_INVADERS_SCREEN_WIDTH  224
 #define SPACE_INVADERS_SCREEN_HEIGHT 256
@@ -45,15 +46,16 @@ private:
     SpaceInvadersShiftRegister shiftRegister;
     SpaceInvadersControllerInput controllerInput;
     ISpaceInvadersDisplay* display;
+    ISpaceInvadersAudioPlayer* audioPlayer;
 
 public:
-    SpaceInvadersMachine(uint8_t* rom, ISpaceInvadersDisplay* display) 
+    SpaceInvadersMachine(uint8_t* rom, ISpaceInvadersDisplay* display, ISpaceInvadersAudioPlayer* audioPlayer)
         : bus(rom, workRam, videoRam),
           cpu(&bus,
               [this](uint8_t port) { return cpuIoInHandler(port); },
               [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); },
               true),
-          display(display) {}
+          display(display), audioPlayer(audioPlayer) {}
 
     void tick(); // 60 Hz
 
