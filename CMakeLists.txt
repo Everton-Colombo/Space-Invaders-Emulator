@@ -40,7 +40,6 @@ set_target_properties(cpu8080_debugger PROPERTIES
 
 # Emulator target:
 file(GLOB EMU_CPP_SOURCES "src/emu/*.cpp")
-list(FILTER EMU_CPP_SOURCES EXCLUDE REGEX "src/cpu8080_debugger.cpp$")
 file(GLOB EMU_CPP_HEADERS "src/emu/*.hpp")
 add_executable(siemu src/main.cpp ${EMU_CPP_SOURCES} ${EMU_CPP_HEADERS})
 target_link_libraries(siemu PRIVATE disassemble8080 utils)

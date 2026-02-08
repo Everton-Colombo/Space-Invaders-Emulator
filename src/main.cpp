@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "si_controller_input.hpp"
 #include "space_invaders_machine.hpp"
 #include "utils.hpp"
 
@@ -23,36 +24,40 @@ void initScreen() {
     UnloadImage(img);
 }
 
-void renderVram(const uint8_t* videoRam) {
-    for (int x = 0; x < SPACE_INVADERS_SCREEN_WIDTH; x++) {
-        for (int y = 0; y < SPACE_INVADERS_SCREEN_HEIGHT; y++) {
-            int byteIdx = (x * 32) + ((255 - y) / 8);
-            int bitIdx = (255 - y) % 8;
-           
-            uint8_t byte = videoRam[byteIdx];
-            bool isPixelOn = (byte >> bitIdx) & 1;
-            int bufferIdx = (y * SPACE_INVADERS_SCREEN_WIDTH) + x;
+class SpaceInvadersDisplayRaylib : public ISpaceInvadersDisplay {
+public:
+    void renderVram(const uint8_t* vram) {
+        for (int x = 0; x < SPACE_INVADERS_SCREEN_WIDTH; x++) {
+            for (int y = 0; y < SPACE_INVADERS_SCREEN_HEIGHT; y++) {
+                int byteIdx = (x * 32) + ((255 - y) / 8);
+                int bitIdx = (255 - y) % 8;
+            
+                uint8_t byte = vram[byteIdx];
+                bool isPixelOn = (byte >> bitIdx) & 1;
+                int bufferIdx = (y * SPACE_INVADERS_SCREEN_WIDTH) + x;
 
-            if (isPixelOn) {
-                pixelBuffer[bufferIdx] = WHITE;
+                if (isPixelOn) {
+                    pixelBuffer[bufferIdx] = WHITE;
 
-                if (y >= 32 && y <= 63)
-                    pixelBuffer[bufferIdx] = RED;
-                else if (y >= 184 && (y <= 239 || (x >= 25 && x <= 135)))
-                    pixelBuffer[bufferIdx] = GREEN;
-            } else {
-                pixelBuffer[bufferIdx] = BLACK;
+                    if (y >= 32 && y <= 63)
+                        pixelBuffer[bufferIdx] = RED;
+                    else if (y >= 184 && (y <= 239 || (x >= 25 && x <= 135)))
+                        pixelBuffer[bufferIdx] = GREEN;
+                } else {
+                    pixelBuffer[bufferIdx] = BLACK;
+                }
             }
         }
-    }
 
-    UpdateTexture(arcadeScreenTexture, pixelBuffer);
-}
+        UpdateTexture(arcadeScreenTexture, pixelBuffer);
+    }
+};
 
 int main(int argc, char* argv[])
 {
     auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
-    SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data());
+    auto display = SpaceInvadersDisplayRaylib();
+    SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data(), &display);
 
     InitWindow(SPACE_INVADERS_SCREEN_WIDTH * 2, SPACE_INVADERS_SCREEN_HEIGHT * 2, "Space Invaders Emulator");
     SetTargetFPS(60);
@@ -63,7 +68,6 @@ int main(int argc, char* argv[])
     {
         updateInput(machine.getControllerInput());
         machine.tick();
-        renderVram(machine.getVideoRam());
 
         BeginDrawing();
 
