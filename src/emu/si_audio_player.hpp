@@ -19,11 +19,11 @@ private:
 public:
     void interpretOutPort3(uint8_t outPort3) {
         if (outPort3 != prevOutPort3) {
-            if ((outPort3 & 0b00000001) && !(outPort3 & 0b00000001)) { startUfo(); }
-            else if (!(outPort3 & 0b00000001) && (outPort3 & 0b00000001)) { stopUfo(); }
-            if ((outPort3 & 0b00000010) && !(outPort3 & 0b00000010)) { playShot(); }
-            if ((outPort3 & 0b00000100) && !(outPort3 & 0b00000100)) { playPlayerDie(); }
-            if ((outPort3 & 0b00001000) && !(outPort3 & 0b00001000)) { playInvaderDie(); }
+            if ((outPort3 & 0b00000001) && !(prevOutPort3 & 0b00000001)) { startUfo(); }
+            else if (!(outPort3 & 0b00000001) && (prevOutPort3 & 0b00000001)) { stopUfo(); }
+            if ((outPort3 & 0b00000010) && !(prevOutPort3 & 0b00000010)) { playShot(); }
+            if ((outPort3 & 0b00000100) && !(prevOutPort3 & 0b00000100)) { playPlayerDie(); }
+            if ((outPort3 & 0b00001000) && !(prevOutPort3 & 0b00001000)) { playInvaderDie(); }
          
             prevOutPort3 = outPort3;
         }
@@ -31,10 +31,10 @@ public:
 
     void interpretOutPort5(uint8_t outPort5) {
         if (outPort5 != prevOutPort5) {
-            if ((outPort5 & 0b00000001) && !(outPort5 & 0b00000001)) { playFleetMov1(); }
-            if ((outPort5 & 0b00000010) && !(outPort5 & 0b00000010)) { playFleetMov2(); }
-            if ((outPort5 & 0b00000100) && !(outPort5 & 0b00000100)) { playFleetMov3(); }
-            if ((outPort5 & 0b00001000) && !(outPort5 & 0b00001000)) { playFleetMov4(); }
+            if ((outPort5 & 0b00000001) && !(prevOutPort5 & 0b00000001)) { playFleetMov1(); }
+            if ((outPort5 & 0b00000010) && !(prevOutPort5 & 0b00000010)) { playFleetMov2(); }
+            if ((outPort5 & 0b00000100) && !(prevOutPort5 & 0b00000100)) { playFleetMov3(); }
+            if ((outPort5 & 0b00001000) && !(prevOutPort5 & 0b00001000)) { playFleetMov4(); }
          
             prevOutPort5 = outPort5;
         }

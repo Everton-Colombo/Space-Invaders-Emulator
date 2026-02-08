@@ -54,7 +54,7 @@ public:
           cpu(&bus,
               [this](uint8_t port) { return cpuIoInHandler(port); },
               [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); },
-              true),
+              false),
           display(display), audioPlayer(audioPlayer) {}
 
     void tick(); // 60 Hz
