@@ -3,7 +3,7 @@
 
 class ISpaceInvadersAudioPlayer {
 private:
-    uint8_t prevOutPort3, prevOutPort5;
+    uint8_t prevOutPort3 = 0, prevOutPort5 = 0;
 
     virtual void startUfo() = 0;
     virtual void stopUfo() = 0;
