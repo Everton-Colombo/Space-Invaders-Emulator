@@ -56,13 +56,14 @@ public:
 class SpaceInvadersAudioPlayerRaylib : public ISpaceInvadersAudioPlayer {
 private:
     Music ufo;
-    Sound shot, playerDie, invaderDie, fleetMov1, fleetMov2, fleetMov3, fleetMov4, ufoHit;
+    Sound shot, playerDie, invaderDie, fleetMov1, fleetMov2, fleetMov3, fleetMov4, ufoHit, extraLife;
 
     void startUfo() override { PlayMusicStream(ufo); }
     void stopUfo() override { StopMusicStream(ufo); }
     void playShot() override { PlaySound(shot); }
     void playPlayerDie() override { PlaySound(playerDie); }
     void playInvaderDie() override { PlaySound(invaderDie); }
+    void playExtraLife() override { PlaySound(extraLife); }
     void playFleetMov1() override { PlaySound(fleetMov1); }
     void playFleetMov2() override { PlaySound(fleetMov2); }
     void playFleetMov3() override { PlaySound(fleetMov3); }
@@ -71,10 +72,10 @@ private:
 
 public:
     SpaceInvadersAudioPlayerRaylib(
-        Music ufo, Sound shot, Sound playerDie, Sound invaderDie,
-        Sound fleetMov1, Sound fleetMov2, Sound fleetMov3, Sound fleetMov4, Sound ufoHit
-    ) : ufo(ufo), shot(shot), playerDie(playerDie), invaderDie(invaderDie),
-        fleetMov1(fleetMov1), fleetMov2(fleetMov2), fleetMov3(fleetMov3), fleetMov4(fleetMov4), ufoHit(ufoHit) {
+        Music ufo, Sound shot, Sound playerDie, Sound invaderDie, Sound fleetMov1,
+        Sound fleetMov2, Sound fleetMov3, Sound fleetMov4, Sound ufoHit, Sound extraLife
+    ) : ufo(ufo), shot(shot), playerDie(playerDie), invaderDie(invaderDie), fleetMov1(fleetMov1),
+    fleetMov2(fleetMov2), fleetMov3(fleetMov3), fleetMov4(fleetMov4), ufoHit(ufoHit), extraLife(extraLife) {
             ufo.looping = true;
             SetMusicVolume(ufo, 0.5);
         }
@@ -111,7 +112,8 @@ int main(int argc, char* argv[])
         LoadSound("data/sounds/5.wav"),
         LoadSound("data/sounds/6.wav"),
         LoadSound("data/sounds/7.wav"),
-        LoadSound("data/sounds/8.wav")
+        LoadSound("data/sounds/8.wav"),
+        LoadSound("data/sounds/9.wav")
     );
     SpaceInvadersMachine machine = SpaceInvadersMachine(rom.data(), &display, &audioPlayer);
 

@@ -10,6 +10,7 @@ private:
     virtual void playShot() = 0;
     virtual void playPlayerDie() = 0;
     virtual void playInvaderDie() = 0;
+    virtual void playExtraLife() = 0;
     virtual void playFleetMov1() = 0;
     virtual void playFleetMov2() = 0;
     virtual void playFleetMov3() = 0;
@@ -24,6 +25,7 @@ public:
             if ((outPort3 & 0b00000010) && !(prevOutPort3 & 0b00000010)) { playShot(); }
             if ((outPort3 & 0b00000100) && !(prevOutPort3 & 0b00000100)) { playPlayerDie(); }
             if ((outPort3 & 0b00001000) && !(prevOutPort3 & 0b00001000)) { playInvaderDie(); }
+            if ((outPort3 & 0b00010000) && !(prevOutPort3 & 0b00010000)) { playExtraLife(); }
          
             prevOutPort3 = outPort3;
         }
@@ -35,6 +37,7 @@ public:
             if ((outPort5 & 0b00000010) && !(prevOutPort5 & 0b00000010)) { playFleetMov2(); }
             if ((outPort5 & 0b00000100) && !(prevOutPort5 & 0b00000100)) { playFleetMov3(); }
             if ((outPort5 & 0b00001000) && !(prevOutPort5 & 0b00001000)) { playFleetMov4(); }
+            if ((outPort5 & 0b00010000) && !(prevOutPort5 & 0b00010000)) { playUfoHit(); }            
          
             prevOutPort5 = outPort5;
         }
