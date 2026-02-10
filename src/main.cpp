@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     InitAudioDevice();
     SetTargetFPS(60);
 
-    auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
+    auto rom = loadROM("data/invaders.rom");
     auto display = SpaceInvadersDisplayRaylib();
     auto audioPlayer = SpaceInvadersAudioPlayerRaylib(
         LoadMusicStream("data/sounds/0ext.wav"),
