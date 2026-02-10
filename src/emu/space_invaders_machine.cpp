@@ -34,10 +34,10 @@ void SpaceInvadersMachine::cpuIoOutHandler(uint8_t port, uint8_t value) {
 
 void SpaceInvadersMachine::tick() {
     cpu.executeCycles(CYCLES_PER_HALF_FRAME);
+    display->renderVram(videoRam);
     cpu.triggerInterrupt(1);
 
     cpu.executeCycles(CYCLES_PER_HALF_FRAME);
-    cpu.triggerInterrupt(2);
-
     display->renderVram(videoRam);
+    cpu.triggerInterrupt(2);
 }

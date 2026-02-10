@@ -76,6 +76,7 @@ public:
     ) : ufo(ufo), shot(shot), playerDie(playerDie), invaderDie(invaderDie),
         fleetMov1(fleetMov1), fleetMov2(fleetMov2), fleetMov3(fleetMov3), fleetMov4(fleetMov4), ufoHit(ufoHit) {
             ufo.looping = true;
+            SetMusicVolume(ufo, 0.5);
         }
     
     ~SpaceInvadersAudioPlayerRaylib() {
@@ -102,7 +103,7 @@ int main(int argc, char* argv[])
     auto rom = loadROM("/home/everton/Development/cpp_projects/space-invaders/data/invaders.rom");
     auto display = SpaceInvadersDisplayRaylib();
     auto audioPlayer = SpaceInvadersAudioPlayerRaylib(
-        LoadMusicStream("data/sounds/0.wav"),
+        LoadMusicStream("data/sounds/0ext.wav"),
         LoadSound("data/sounds/1.wav"),
         LoadSound("data/sounds/2.wav"),
         LoadSound("data/sounds/3.wav"),
@@ -132,7 +133,6 @@ int main(int argc, char* argv[])
     }
 
     UnloadTexture(arcadeScreenTexture);
-    audioPlayer.~SpaceInvadersAudioPlayerRaylib();
     CloseAudioDevice();
     CloseWindow();
 
