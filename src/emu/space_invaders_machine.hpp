@@ -1,44 +1,13 @@
 #pragma once
 #include <array>
 #include "cpu8080.hpp"
+#include "si_shift_register.hpp"
+#include "si_controller_input.hpp"
+#include "si_display.hpp"
+#include "si_audio_player.hpp"
 
 #define SPACE_INVADERS_SCREEN_WIDTH  224
 #define SPACE_INVADERS_SCREEN_HEIGHT 256
-
-class SpaceInvadersShiftRegister {
-private:
-    uint8_t shiftOffset;
-    uint8_t shift0;
-    uint8_t shift1;
-
-public:
-    uint8_t getResult();
-    void fill(uint8_t value);
-    void setOffset(uint8_t value);
-};
-
-enum SpaceInvadersControllerInputId {
-    COIN,
-    P1_START,
-    P1_SHOOT,
-    P1_LEFT,
-    P1_RIGHT,
-    P2_START,
-    P2_SHOOT,
-    P2_LEFT,
-    P2_RIGHT
-};
-
-class SpaceInvadersControllerInput {
-private:
-    std::array<bool, 9> inputStates;
-
-public:
-    void setInputState(SpaceInvadersControllerInputId inputId, bool state);
-
-    const std::array<bool, 9> getInputStates();
-    std::pair<uint8_t, uint8_t> getControllerInputPortsData();
-};
 
 class SpaceInvadersBus : public IIndexable {
 private:
@@ -76,14 +45,17 @@ private:
     // Peripherals:
     SpaceInvadersShiftRegister shiftRegister;
     SpaceInvadersControllerInput controllerInput;
+    ISpaceInvadersDisplay* display;
+    ISpaceInvadersAudioPlayer* audioPlayer;
 
 public:
-    SpaceInvadersMachine(uint8_t* rom) 
+    SpaceInvadersMachine(uint8_t* rom, ISpaceInvadersDisplay* display, ISpaceInvadersAudioPlayer* audioPlayer)
         : bus(rom, workRam, videoRam),
           cpu(&bus,
               [this](uint8_t port) { return cpuIoInHandler(port); },
               [this](uint8_t port, uint8_t value) { cpuIoOutHandler(port, value); },
-              true) {}
+              false),
+          display(display), audioPlayer(audioPlayer) {}
 
     void tick(); // 60 Hz
 
