@@ -38,7 +38,7 @@ set_target_properties(cpu8080_debugger PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-# Emulator target:
+# Emulator target: 
 file(GLOB EMU_CPP_SOURCES "src/emu/*.cpp")
 file(GLOB EMU_CPP_HEADERS "src/emu/*.hpp")
 add_executable(siemu src/main.cpp ${EMU_CPP_SOURCES} ${EMU_CPP_HEADERS})
@@ -47,4 +47,11 @@ target_link_libraries(siemu PRIVATE raylib)
 target_include_directories(siemu PRIVATE src/emu src/disassembler src/utils)
 set_target_properties(siemu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET siemu POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/data
+    $<TARGET_FILE_DIR:siemu>/data
+    COMMENT "Copying resources to build directory..."
 )
