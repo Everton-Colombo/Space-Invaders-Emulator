@@ -15,14 +15,16 @@ A space invaders arcade machine emulator written in C++ using [Raylib](https://w
 
 Download the latest release from [GitHub Releases](https://github.com/Everton-Colombo/space-invaders/releases) and execute the appropriate executable for your platform (Linux 64-bit or Windows 64-bit).
 
-## Prerequisites
+## Building
+
+### Prerequisites
 
 To build this project, you will need:
 - A C++17 compatible compiler (GCC, Clang, MSVC).
 - [CMake](https://cmake.org/) (version 3.25 or higher).
 - [Git](https://git-scm.com/) (to fetch dependencies).
 
-## Building
+### Building instructions
 
 The project uses CMake for the build system. Raylib is automatically fetched as a dependency during configuration.
 
