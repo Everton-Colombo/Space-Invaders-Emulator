@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <stdint.h>
 
 struct ConditionFlags8080 {
     bool z  : 1;
@@ -217,7 +218,7 @@ public:
         }
 
     bool executeNext();
-    void executeCycles(uint cycles = 0);
+    void executeCycles(unsigned int cycles = 0);
     void triggerInterrupt(uint8_t ist);
     void _printState();
 

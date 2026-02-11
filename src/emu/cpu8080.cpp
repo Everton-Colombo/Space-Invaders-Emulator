@@ -687,7 +687,7 @@ bool CPU_8080::executeNext() {
     }
 }
 
-void CPU_8080::executeCycles(uint cycles) {
+void CPU_8080::executeCycles(unsigned int cycles) {
     uint64_t prevCycles = _cycleCount;
     while (_cycleCount - prevCycles <= cycles) {
         executeNext();
