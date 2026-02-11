@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
     InitWindow(SPACE_INVADERS_SCREEN_WIDTH * 2, SPACE_INVADERS_SCREEN_HEIGHT * 2, "Space Invaders Emulator");
     InitAudioDevice();
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL);
 
     auto rom = loadROM("data/invaders.rom");
     auto display = SpaceInvadersDisplayRaylib();
@@ -119,17 +120,28 @@ int main(int argc, char* argv[])
 
     initScreen();
 
+    bool paused = false;
+
     while (!WindowShouldClose())
     {
-        updateInput(machine.getControllerInput());
-        machine.tick();
-        audioPlayer.update();
+        if (IsKeyPressed(KEY_ESCAPE))
+            paused = !paused;
+        
+        if (!paused) {
+            updateInput(machine.getControllerInput());
+            machine.tick();
+            audioPlayer.update();
+        }
 
         BeginDrawing();
 
-            ClearBackground(RAYWHITE);
+            ClearBackground(BLACK);
 
             DrawTextureEx(arcadeScreenTexture, (Vector2) {0, 0}, 0, 2, WHITE);
+            if (paused) {
+                DrawRectangle(0, SPACE_INVADERS_SCREEN_HEIGHT - 10, SPACE_INVADERS_SCREEN_WIDTH * 2, 40, MAGENTA);
+                DrawText("EMULATION PAUSED", SPACE_INVADERS_SCREEN_WIDTH - 100, SPACE_INVADERS_SCREEN_HEIGHT, 20, BLACK);
+            }
 
         EndDrawing();
     }
