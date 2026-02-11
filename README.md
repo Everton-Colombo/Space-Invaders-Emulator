@@ -1,5 +1,7 @@
 # Space Invaders Emulator
 
+![Space Invaders Screenshot](screenshot.png)
+
 A space invaders arcade machine emulator written in C++ using [Raylib](https://www.raylib.com/) for rendering and audio handling. This project emulates the Intel 8080 CPU and the original arcade hardware.
 
 ## Features
@@ -8,6 +10,10 @@ A space invaders arcade machine emulator written in C++ using [Raylib](https://w
 - Original arcade graphics and sounds.
 - Support for 1 and 2 players.
 - Debugging tools included (CLI debugger and disassembler).
+
+## Installation
+
+Download the latest release from [GitHub Releases](https://github.com/Everton-Colombo/space-invaders/releases) and execute the appropriate executable for your platform (Linux 64-bit or Windows 64-bit).
 
 ## Prerequisites
 
